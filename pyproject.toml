@@ -13,7 +13,7 @@ dependencies = [
 ]
 
 [project.scripts]
-llm-fingerprint = "llm_fingerprint:main"
+llm-fingerprint = "llm_fingerprint.cli:main"
 
 [build-system]
 requires = ["hatchling"]
