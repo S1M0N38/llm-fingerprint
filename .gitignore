@@ -11,4 +11,7 @@ wheels/
 .envrc
 
 # Data
-data
+/data/*
+!/data/prompts/
+!/data/prompts/*.yaml
+!/data/prompts/*.jsonl
