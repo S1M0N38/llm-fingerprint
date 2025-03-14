@@ -57,7 +57,7 @@ class SamplesGenerator:
             prompts = [Prompt.model_validate_json(line) for line in f]
         for prompt in prompts:
             # check for prompt integrity
-            assert uuid.uuid5(uuid.NAMESPACE_DNS, prompt.prompt) == prompt.id
+            assert str(uuid.uuid5(uuid.NAMESPACE_DNS, prompt.prompt)) == prompt.id
         return prompts
 
     async def main(self) -> None:
