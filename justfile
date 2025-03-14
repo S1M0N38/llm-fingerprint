@@ -1,3 +1,21 @@
+################################################################################
+# Generate
+################################################################################
+
+models := "phi-4 meta-llama-3.1-8b-instruct granite-3.2-8b-instruct gemma-3-4b-it"
+timestamp := `date +%Y%m%dT%H%M%S`
+
+generate-samples-for-all-models:
+    llm-fingerprint generate \
+      --language-model {{models}} \
+      --prompts-path "./data/prompts/prompts_general_v1.jsonl" \
+      --samples-path "./data/samples/{{timestamp}}.jsonl" \
+      --samples-num 3
+
+################################################################################
+# ChromaDB
+################################################################################
+
 chroma-run:
     #!/usr/bin/env bash
     mkdir -p ./data/chroma
