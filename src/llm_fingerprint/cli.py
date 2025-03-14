@@ -12,6 +12,7 @@ from llm_fingerprint.generate import SamplesGenerator
 def cmd_generate(args: Namespace):
     """Generate samples and save them to args.samples_path."""
     for model in args.language_model:
+        args.samples_path.parent.mkdir(parents=True, exist_ok=True)
         generator = SamplesGenerator(
             language_model=model,
             prompts_path=args.prompts_path,
