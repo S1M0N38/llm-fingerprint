@@ -11,14 +11,15 @@ from llm_fingerprint.generate import SamplesGenerator
 
 def cmd_generate(args: Namespace):
     """Generate samples and save them to args.samples_path."""
-    generator = SamplesGenerator(
-        language_model=args.language_model,
-        prompts_path=args.prompts_path,
-        samples_path=args.samples_path,
-        samples_num=args.samples_num,
-        max_tokens=args.max_tokens,
-    )
-    asyncio.run(generator.main())
+    for model in args.language_model:
+        generator = SamplesGenerator(
+            language_model=model,
+            prompts_path=args.prompts_path,
+            samples_path=args.samples_path,
+            samples_num=args.samples_num,
+            max_tokens=args.max_tokens,
+        )
+        asyncio.run(generator.main())
 
 
 def cmd_upload(args: Namespace):
@@ -49,8 +50,9 @@ def main():
     generate_parser.add_argument(
         "--language-model",
         type=str,
+        nargs="+",
         required=True,
-        help="Model to use for the LLM",
+        help="Model(s) to use for the LLM",
     )
     generate_parser.add_argument(
         "--prompts-path",
