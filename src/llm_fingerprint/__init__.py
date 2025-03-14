@@ -1,2 +1,1 @@
-def main() -> None:
-    print("Hello from llm-fingerprint!")
+__version__ = "0.0.0"
