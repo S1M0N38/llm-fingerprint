@@ -45,9 +45,8 @@ LLM Fingerprint uses semantic similarity patterns across multiple prompts to cre
 # Set required environment variables
 export LLM_API_KEY="your_api_key"
 export LLM_BASE_URL="https://api.provider.com/v1"
-export EMB_API_KEY="your_embedding_api_key"
-export EMB_BASE_URL="https://api.provider.com/v1"
-export CHROMADB_URL="http://localhost:8000"
+export CHROMADB_MODEL="jinaai/jina-embeddings-v3"
+export CHROMADB_URL="http://localhost:1235"
 ```
 
 ### Creating Model Fingerprints
