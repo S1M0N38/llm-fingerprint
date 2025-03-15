@@ -6,13 +6,15 @@ import sys
 from argparse import Namespace
 from pathlib import Path
 
+from tqdm import tqdm
+
 from llm_fingerprint.generate import SamplesGenerator
 
 
 def cmd_generate(args: Namespace):
     """Generate samples and save them to args.samples_path."""
     args.samples_path.parent.mkdir(parents=True, exist_ok=True)
-    for model in args.language_model:
+    for model in tqdm(args.language_model, desc="Generate samples", unit="model"):
         generator = SamplesGenerator(
             language_model=model,
             prompts_path=args.prompts_path,

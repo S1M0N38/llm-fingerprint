@@ -81,6 +81,8 @@ class SamplesGenerator:
             for future in tqdm(
                 asyncio.as_completed(tasks),
                 total=len(tasks),
+                desc=f"{self.language_model}",
+                unit="sample",
                 smoothing=0,
             ):
                 await future
