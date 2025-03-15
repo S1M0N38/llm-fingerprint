@@ -2,16 +2,16 @@
 # Generate
 ################################################################################
 
-meta_models := "llama-3.2-1b llama-3.2-3b llama-3.1-8b"
+llama_models := "llama-3.2-1b llama-3.2-3b llama-3.1-8b"
 mistral_models := "ministral-8b mistral-nemo-12b mistral-7b"
-qwen_models := "qwen-2.5-0.5b qwen-2.5-1.5b qwen-2.5-3b qwen-2.5-14b"
-google_models := "gemma-3-1b gemma-3-4b gemma-3-12b"
+qwen_models := "qwen-2.5-0.5b qwen-2.5-1.5b qwen-2.5-3b qwen-2.5-7b qwen-2.5-14b"
+gemma_models := "gemma-3-1b gemma-3-4b gemma-3-12b"
 
 timestamp := `date +%Y%m%dT%H%M%S`
 
 generate-samples-for-all-models:
     llm-fingerprint generate \
-      --language-model {{meta_models}} {{mistral_models}} {{qwen_models}} {{google_models}} \
+      --language-model {{llama_models}} {{mistral_models}} {{qwen_models}} {{gemma_models}} \
       --prompts-path "./data/prompts/prompts_general_v1.jsonl" \
       --samples-path "./data/samples/{{timestamp}}.jsonl" \
       --samples-num 4
