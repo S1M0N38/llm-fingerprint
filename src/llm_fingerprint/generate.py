@@ -74,11 +74,15 @@ class SamplesGenerator:
             for _ in range(self.samples_num)
         ]
 
-        for future in tqdm(
-            asyncio.as_completed(tasks),
-            total=len(tasks),
-            desc=f"generate ({self.language_model})",
-        ):
-            await future
+        # NOTE: we are manually create multiple samples instead of using `n`
+        # because llama-server does not support `n` in completions.create
 
-        await self.client.close()
+        try:
+            for future in tqdm(
+                asyncio.as_completed(tasks),
+                total=len(tasks),
+                smoothing=0,
+            ):
+                await future
+        finally:
+            await self.client.close()
