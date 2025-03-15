@@ -15,3 +15,6 @@ wheels/
 !/data/prompts/
 !/data/prompts/*.yaml
 !/data/prompts/*.jsonl
+
+# llama-swap binary
+llama-swap
