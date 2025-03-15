@@ -1,1 +1,23 @@
 source .venv/bin/activate
+
+################################################################################
+# LLM variables
+################################################################################
+
+export LLM_API_KEY="your_api_key"
+export LLM_BASE_URL="http://localhost:1234/v1"
+
+################################################################################
+# Vector database
+################################################################################
+
+export CHROMADB_MODEL="jinaai/jina-embeddings-v3"
+export CHROMADB_URL="http://localhost:1235"
+
+################################################################################
+# LLM Local Providers
+# This section relevent only if you want to host LLM yourself
+################################################################################
+
+# llama.cpp + llama-swap (See config/llama-cpp.yaml)
+export LLAMA_SERVER_BIN=""
