@@ -1,0 +1,199 @@
+# The following is an example YAML configuration file for llama-swap
+# (https://github.com/mostlygeek/llama-swap), a transparent proxy server that
+# provides automatic model swapping to llama.cpp's server.
+
+# If you want to use this configuration file, you need:
+#
+# 1. Install llama.cpp. Follow the instructions on the GitHub repository.
+#
+# 2. Install llama-swap. Follow the instructions on the GitHub repository.
+#
+# 3. Download gguf files from Hugging Face.
+#
+# 4. Modify this very file setting up the absolute path for:
+#    - llama-server binary ("/opt/homebrew/bin/llama-server" in this example)
+#    - gguf models ("-m models/*.gguf" in this example)
+#
+# 5. Start the llama-swap using config from this very configuration file.
+#    For example, from llm-fingerprint root:
+#
+#      ./llama-swap --config configs/llama-cpp.yaml --listen ":1234"
+#
+#   (supposing that 1234 is the port of LLM_BASE_URL)
+
+# The following configuration is tested on a MacBook Pro M1-Max 32GB running
+# llama-server (the OpenAI provided by llama.cpp) installed with brew.
+
+# The **important llama.cpp parameters** that (maybe) you need to change are:
+#
+# `healthCheckTimeout`: This is the time after which llama-swap will throw a
+#   timeout exception and your requests will fail. Paired with multiple
+#   concurrent requests trying to load the model in memory, this could lead to
+#   a system crash. It's really important that you set a value corresponding to
+#   the time required to load the bigger model with an added wide margin.
+#   Default is 15 seconds, which is too low.
+#
+# `-np`: Number of parallel requests supported by the llama.cpp server.
+#
+# `-c`: This is the llama.cpp context window which corresponds to the max_token
+#   supported by a model (input + generation) times `-np`. For example, if you
+#   are using max_token with value 2048 and `-np` set to 4, `-c` must be set to
+#   2048 * 4 = 8192. This setting accounts for the worst-case scenario where
+#   all the parallel requests use the max number of tokens.
+#   At the implementation level, `-c` is the size of KV cache squared matrices
+#   and setting `-np` introduces a clever masking where tokens attend only to
+#   previous tokens within the same request.
+
+healthCheckTimeout: 60
+
+models:
+  #############################################################################
+  # Families
+  #############################################################################
+
+  # - Llama: llama-3.2-1b llama-3.2-3b llama-3.1-8b
+  # - Mistral: ministral-8b mistral-nemo-12b mistral-7b
+  # - Qwen: qwen-2.5-0.5b qwen-2.5-1.5b qwen-2.5-3b qwen-2.5-7b qwen-2.5-14b
+  # - Gemma: gemma-3-1b gemma-3-4b gemma-3-12b
+
+  #############################################################################
+  # Llama
+  #############################################################################
+
+  "llama-3.2-1b":
+    proxy: "http://127.0.0.1:9999"
+    cmd: >
+      /opt/homebrew/bin/llama-server
+      -m ./models/llama-3.2-1b/Llama-3.2-1B-Instruct-Q4_K_L.gguf
+      -c 8192
+      -np 4
+      --port 9999
+
+  "llama-3.2-3b":
+    proxy: "http://127.0.0.1:9999"
+    cmd: >
+      /opt/homebrew/bin/llama-server
+      -m ./models/llama-3.2-3b/Llama-3.2-3B-Instruct-Q4_K_L.gguf
+      -c 8192
+      -np 4
+      --port 9999
+
+  "llama-3.1-8b":
+    proxy: "http://127.0.0.1:9999"
+    cmd: >
+      /opt/homebrew/bin/llama-server
+      -m ./models/llama-3.1-8b/Meta-Llama-3.1-8B-Instruct-Q4_K_L.gguf
+      -c 8192
+      -np 4
+      --port 9999
+
+  #############################################################################
+  # Mistral
+  #############################################################################
+
+  "ministral-8b":
+    proxy: "http://127.0.0.1:9999"
+    cmd: >
+      /opt/homebrew/bin/llama-server
+      -m ./models/ministral-8b/Ministral-8B-Instruct-2410-Q4_K_L.gguf
+      -c 8192
+      -np 4
+      --port 9999
+
+  "mistral-nemo-12b":
+    proxy: "http://127.0.0.1:9999"
+    cmd: >
+      /opt/homebrew/bin/llama-server
+      -m ./models/mistral-nemo-12b/Mistral-Nemo-Instruct-2407-Q4_K_L.gguf
+      -c 8192
+      -np 4
+      --port 9999
+
+  "mistral-7b":
+    proxy: "http://127.0.0.1:9999"
+    cmd: >
+      /opt/homebrew/bin/llama-server
+      -m ./models/mistral-7b/Mistral-7B-Instruct-v0.3-Q4_K_M.gguf
+      -c 8192
+      -np 4
+      --port 9999
+
+  #############################################################################
+  # Qwen
+  #############################################################################
+
+  "qwen-2.5-0.5b":
+    proxy: "http://127.0.0.1:9999"
+    cmd: >
+      /opt/homebrew/bin/llama-server
+      -m ./models/qwen-2.5-0.5b/Qwen2.5-0.5B-Instruct-Q4_K_L.gguf
+      -c 8192
+      -np 4
+      --port 9999
+
+  "qwen-2.5-1.5b":
+    proxy: "http://127.0.0.1:9999"
+    cmd: >
+      /opt/homebrew/bin/llama-server
+      -m ./models/qwen-2.5-1.5b/Qwen2.5-1.5B-Instruct-Q4_K_L.gguf
+      -c 8192
+      -np 4
+      --port 9999
+
+  "qwen-2.5-3b":
+    proxy: "http://127.0.0.1:9999"
+    cmd: >
+      /opt/homebrew/bin/llama-server
+      -m ./models/qwen-2.5-3b/Qwen2.5-3B-Instruct-Q4_K_L.gguf
+      -c 8192
+      -np 4
+      --port 9999
+
+  "qwen-2.5-7b":
+    proxy: "http://127.0.0.1:9999"
+    cmd: >
+      /opt/homebrew/bin/llama-server
+      -m ./models/qwen-2.5-7b/Qwen2.5-7B-Instruct-Q4_K_L.gguf
+      -c 8192
+      -np 4
+      --port 9999
+
+  "qwen-2.5-14b":
+    proxy: "http://127.0.0.1:9999"
+    cmd: >
+      /opt/homebrew/bin/llama-server
+      -m ./models/qwen-2.5-14b/Qwen2.5-14B-Instruct-Q4_K_L.gguf
+      -c 8192
+      -np 4
+      --port 9999
+
+  #############################################################################
+  # Gemma
+  #############################################################################
+
+  "gemma-3-1b":
+    proxy: "http://127.0.0.1:9999"
+    cmd: >
+      /opt/homebrew/bin/llama-server
+      -m ./models/gemma-3-1b/gemma-3-1b-it-Q4_K_M.gguf
+      -c 8192
+      -np 4
+      --port 9999
+
+  "gemma-3-4b":
+    proxy: "http://127.0.0.1:9999"
+    cmd: >
+      /opt/homebrew/bin/llama-server
+      -m ./models/gemma-3-4b/gemma-3-4b-it-Q4_K_M.gguf
+      -c 8192
+      -np 4
+      --port 9999
+
+  "gemma-3-12b":
+    proxy: "http://127.0.0.1:9999"
+    cmd: >
+      /opt/homebrew/bin/llama-server
+      -m ./models/gemma-3-12b/gemma-3-12b-it-Q4_K_M.gguf
+      -c 8192
+      -np 4
+      --port 9999
