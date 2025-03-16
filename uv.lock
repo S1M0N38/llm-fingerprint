@@ -645,6 +645,7 @@ source = { editable = "." }
 dependencies = [
     { name = "aiofiles" },
     { name = "chromadb" },
+    { name = "httpx" },
     { name = "openai" },
     { name = "pydantic" },
     { name = "tqdm" },
@@ -661,6 +662,7 @@ dev = [
 requires-dist = [
     { name = "aiofiles", specifier = ">=24.1.0" },
     { name = "chromadb", specifier = ">=0.6.3" },
+    { name = "httpx", specifier = ">=0.28.1" },
     { name = "openai", specifier = ">=1.66.3" },
     { name = "pydantic", specifier = ">=2.10.6" },
     { name = "tqdm", specifier = ">=4.67.1" },
