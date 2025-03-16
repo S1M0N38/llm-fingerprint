@@ -48,7 +48,7 @@
 #   suggested to set this value to the number of hardware CPU cores. On the M1
 #   Max, there are 8 performance cores.
 
-healthCheckTimeout: 60
+healthCheckTimeout: 120
 
 models:
   #############################################################################
