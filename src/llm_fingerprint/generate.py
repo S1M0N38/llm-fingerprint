@@ -6,6 +6,7 @@ import uuid
 from pathlib import Path
 
 import aiofiles
+import httpx
 from openai import AsyncOpenAI
 from tqdm import tqdm
 
@@ -31,7 +32,11 @@ class SamplesGenerator:
         self.samples_num: int = samples_num
         self.max_tokens: int = max_tokens
         self.semaphore = asyncio.Semaphore(concurrent_requests)
-        self.client = AsyncOpenAI(api_key=LLM_API_KEY, base_url=LLM_BASE_URL)
+        self.client = AsyncOpenAI(
+            api_key=LLM_API_KEY,
+            base_url=LLM_BASE_URL,
+            timeout=httpx.Timeout(timeout=900, connect=5.0),
+        )
 
     async def generate_sample(self, prompt: Prompt) -> Sample:
         response = await self.client.chat.completions.create(
