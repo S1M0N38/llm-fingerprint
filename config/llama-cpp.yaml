@@ -43,6 +43,10 @@
 #   At the implementation level, `-c` is the size of KV cache squared matrices
 #   and setting `-np` introduces a clever masking where tokens attend only to
 #   previous tokens within the same request.
+#
+# `--threads`: Number of CPU threads. In the llama.cpp documentation, it is
+#   suggested to set this value to the number of hardware CPU cores. On the M1
+#   Max, there are 8 performance cores.
 
 healthCheckTimeout: 60
 
@@ -67,7 +71,11 @@ models:
       -m ./models/llama-3.2-1b/Llama-3.2-1B-Instruct-Q4_K_L.gguf
       -c 8192
       -np 4
+      --threads 8
       --port 9999
+      --seed 42
+      --temp 0.6
+      --top-p 0.9
 
   "llama-3.2-3b":
     proxy: "http://127.0.0.1:9999"
@@ -76,7 +84,11 @@ models:
       -m ./models/llama-3.2-3b/Llama-3.2-3B-Instruct-Q4_K_L.gguf
       -c 8192
       -np 4
+      --threads 8
       --port 9999
+      --seed 42
+      --temp 0.6
+      --top-p 0.9
 
   "llama-3.1-8b":
     proxy: "http://127.0.0.1:9999"
@@ -85,7 +97,11 @@ models:
       -m ./models/llama-3.1-8b/Meta-Llama-3.1-8B-Instruct-Q4_K_L.gguf
       -c 8192
       -np 4
+      --threads 8
       --port 9999
+      --seed 42
+      --temp 0.6
+      --top-p 0.9
 
   #############################################################################
   # Mistral
@@ -98,7 +114,10 @@ models:
       -m ./models/ministral-8b/Ministral-8B-Instruct-2410-Q4_K_L.gguf
       -c 8192
       -np 4
+      --threads 8
       --port 9999
+      --seed 42
+      --temp 0.6
 
   "mistral-nemo-12b":
     proxy: "http://127.0.0.1:9999"
@@ -107,7 +126,10 @@ models:
       -m ./models/mistral-nemo-12b/Mistral-Nemo-Instruct-2407-Q4_K_L.gguf
       -c 8192
       -np 4
+      --threads 8
       --port 9999
+      --seed 42
+      --temp 0.6
 
   "mistral-7b":
     proxy: "http://127.0.0.1:9999"
@@ -116,7 +138,10 @@ models:
       -m ./models/mistral-7b/Mistral-7B-Instruct-v0.3-Q4_K_M.gguf
       -c 8192
       -np 4
+      --threads 8
       --port 9999
+      --seed 42
+      --temp 0.6
 
   #############################################################################
   # Qwen
@@ -129,7 +154,12 @@ models:
       -m ./models/qwen-2.5-0.5b/Qwen2.5-0.5B-Instruct-Q4_K_L.gguf
       -c 8192
       -np 4
+      --threads 8
       --port 9999
+      --seed 42
+      --temp 0.7
+      --top-p 0.8
+      --top-k 20
 
   "qwen-2.5-1.5b":
     proxy: "http://127.0.0.1:9999"
@@ -138,7 +168,12 @@ models:
       -m ./models/qwen-2.5-1.5b/Qwen2.5-1.5B-Instruct-Q4_K_L.gguf
       -c 8192
       -np 4
+      --threads 8
       --port 9999
+      --seed 42
+      --temp 0.7
+      --top-p 0.8
+      --top-k 20
 
   "qwen-2.5-3b":
     proxy: "http://127.0.0.1:9999"
@@ -147,7 +182,12 @@ models:
       -m ./models/qwen-2.5-3b/Qwen2.5-3B-Instruct-Q4_K_L.gguf
       -c 8192
       -np 4
+      --threads 8
       --port 9999
+      --seed 42
+      --temp 0.7
+      --top-p 0.8
+      --top-k 20
 
   "qwen-2.5-7b":
     proxy: "http://127.0.0.1:9999"
@@ -156,7 +196,12 @@ models:
       -m ./models/qwen-2.5-7b/Qwen2.5-7B-Instruct-Q4_K_L.gguf
       -c 8192
       -np 4
+      --threads 8
       --port 9999
+      --seed 42
+      --temp 0.7
+      --top-p 0.8
+      --top-k 20
 
   "qwen-2.5-14b":
     proxy: "http://127.0.0.1:9999"
@@ -165,7 +210,12 @@ models:
       -m ./models/qwen-2.5-14b/Qwen2.5-14B-Instruct-Q4_K_L.gguf
       -c 8192
       -np 4
+      --threads 8
       --port 9999
+      --seed 42
+      --temp 0.7
+      --top-p 0.8
+      --top-k 20
 
   #############################################################################
   # Gemma
@@ -178,7 +228,14 @@ models:
       -m ./models/gemma-3-1b/gemma-3-1b-it-Q4_K_M.gguf
       -c 8192
       -np 4
+      --threads 8
       --port 9999
+      --seed 42
+      --temp 1.0
+      --repeat-penalty 1.0
+      --min-p 0.01
+      --top-k 64
+      --top-p 0.95
 
   "gemma-3-4b":
     proxy: "http://127.0.0.1:9999"
@@ -187,7 +244,14 @@ models:
       -m ./models/gemma-3-4b/gemma-3-4b-it-Q4_K_M.gguf
       -c 8192
       -np 4
+      --threads 8
       --port 9999
+      --seed 42
+      --temp 1.0
+      --repeat-penalty 1.0
+      --min-p 0.01
+      --top-k 64
+      --top-p 0.95
 
   "gemma-3-12b":
     proxy: "http://127.0.0.1:9999"
@@ -196,4 +260,11 @@ models:
       -m ./models/gemma-3-12b/gemma-3-12b-it-Q4_K_M.gguf
       -c 8192
       -np 4
+      --threads 8
       --port 9999
+      --seed 42
+      --temp 1.0
+      --repeat-penalty 1.0
+      --min-p 0.01
+      --top-k 64
+      --top-p 0.95
