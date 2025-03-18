@@ -9,6 +9,8 @@ llama_models := "llama-3.2-1b llama-3.2-3b llama-3.1-8b"
 mistral_models := "ministral-8b mistral-nemo-12b mistral-7b"
 qwen_models := "qwen-2.5-0.5b qwen-2.5-1.5b qwen-2.5-3b qwen-2.5-7b qwen-2.5-14b"
 gemma_models := "gemma-3-1b gemma-3-4b gemma-3-12b"
+phi_models := "phi-4 phi-4-mini"
+smollm_models := "smollm-2-135m smollm-2-360m smollm-2-1.7b"
 
 
 generate-samples:
@@ -20,7 +22,7 @@ generate-samples:
 
 generate-samples-for-all-models:
     llm-fingerprint generate \
-      --language-model {{llama_models}} {{mistral_models}} {{qwen_models}} {{gemma_models}} \
+      --language-model {{llama_models}} {{mistral_models}} {{qwen_models}} {{gemma_models}} {{phi_models}} {{smollm_models}} \
       --prompts-path "./data/prompts/prompts_general_v1.jsonl" \
       --samples-path "./data/samples/{{timestamp}}.jsonl" \
       --samples-num 4
@@ -31,7 +33,7 @@ generate-samples-for-all-models:
 
 test-generate-models-swapping:
     llm-fingerprint generate \
-      --language-model {{llama_models}} {{mistral_models}} {{qwen_models}} {{gemma_models}} \
+      --language-model {{llama_models}} {{mistral_models}} {{qwen_models}} {{gemma_models}} {{phi_models}} {{smollm_models}} \
       --prompts-path "./data/prompts/prompts_single_v1.jsonl" \
       --samples-path "/tmp/llm_samples_{{timestamp}}.jsonl" \
       --samples-num 1
