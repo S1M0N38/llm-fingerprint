@@ -29,8 +29,9 @@ class SamplesUploader:
             embedding_functions.SentenceTransformerEmbeddingFunction(  # type: ignore
                 model_name=CHROMADB_MODEL,
                 trust_remote_code=True,
-                # NOTE: trust_remote_code=True is needed for some models. Use at you own risk.
-                # After downloading the model, you can pin it to a specific version.
+                # NOTE: trust_remote_code=True is needed for some models.
+                # Use at you own risk. After downloading the model, you can pin it
+                # to a specific version.
             )
         )
         asyncio.run(self._init_client())
