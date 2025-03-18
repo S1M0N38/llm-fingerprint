@@ -61,8 +61,8 @@ llm-fingerprint generate \
 
 # Upload samples to ChromaDB
 llm-fingerprint upload \
-  --embedding-model "embedding-model" \
-  --samples-path "samples.jsonl"
+  --samples-path "samples.jsonl" \
+  --collection-name "samples.jsonl"
 ```
 
 ### Identifying Unknown Models
