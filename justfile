@@ -25,6 +25,10 @@ generate-samples-for-all-models:
       --samples-path "./data/samples/{{timestamp}}.jsonl" \
       --samples-num 4
 
+################################################################################
+# Test
+################################################################################
+
 test-generate-models-swapping:
     llm-fingerprint generate \
       --language-model {{llama_models}} {{mistral_models}} {{qwen_models}} {{gemma_models}} \
