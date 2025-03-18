@@ -59,6 +59,8 @@ models:
   # - Mistral: ministral-8b mistral-nemo-12b mistral-7b
   # - Qwen: qwen-2.5-0.5b qwen-2.5-1.5b qwen-2.5-3b qwen-2.5-7b qwen-2.5-14b
   # - Gemma: gemma-3-1b gemma-3-4b gemma-3-12b
+  # - Phi: phi-4 phi-4-mini
+  # - Smollm: smollm-2-135m smollm-2-360m smollm-2-1.7b
 
   #############################################################################
   # Llama
@@ -267,4 +269,75 @@ models:
       --repeat-penalty 1.0
       --min-p 0.01
       --top-k 64
+      --top-p 0.95
+
+  #############################################################################
+  # Phi
+  #############################################################################
+
+  "phi-4":
+    proxy: "http://127.0.0.1:9999"
+    cmd: >
+      /opt/homebrew/bin/llama-server
+      -m ./models/phi-4/phi-4-Q4_K_M.gguf
+      -c 8192
+      -np 4
+      --threads 8
+      --port 9999
+      --seed 42
+      --temp 0.6
+
+  "phi-4-mini":
+    proxy: "http://127.0.0.1:9999"
+    cmd: >
+      /opt/homebrew/bin/llama-server
+      -m ./models/phi-4-mini/Phi-4-mini-instruct-Q4_K_M.gguf
+      -c 8192
+      -np 4
+      --threads 8
+      --port 9999
+      --seed 42
+      --temp 0.6
+
+  #############################################################################
+  # Smollm
+  #############################################################################
+
+  "smollm-2-135m":
+    proxy: "http://127.0.0.1:9999"
+    cmd: >
+      /opt/homebrew/bin/llama-server
+      -m ./models/smollm-2-135m/SmolLM2-135M-Instruct-Q4_K_M.gguf
+      -c 8192
+      -np 4
+      --threads 8
+      --port 9999
+      --seed 42
+      --temp 0.2
+      --top-p 0.95
+
+  "smollm-2-360m":
+    proxy: "http://127.0.0.1:9999"
+    cmd: >
+      /opt/homebrew/bin/llama-server
+      -m ./models/smollm-2-360m/SmolLM2-360M-Instruct-Q4_K_M.gguf
+      -c 8192
+      -np 4
+      --threads 8
+      --port 9999
+      --seed 42
+      --temp 0.2
+      --top-p 0.95
+
+  "smollm-2-1.7b":
+    proxy: "http://127.0.0.1:9999"
+    cmd: >
+      /opt/homebrew/bin/llama-server
+      -m ./models/smollm-2-1.7b/SmolLM2-1.7B-Instruct-Q4_K_M.gguf
+      -c 8192
+      -np 4
+      --threads 8
+      --port 9999
+      --seed 42
+      --temp 0.2
       --top-p 0.95
