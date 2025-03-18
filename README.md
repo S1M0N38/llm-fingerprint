@@ -62,7 +62,7 @@ llm-fingerprint generate \
 # Upload samples to ChromaDB
 llm-fingerprint upload \
   --samples-path "samples.jsonl" \
-  --collection-name "samples.jsonl"
+  --collection-name "samples"
 ```
 
 ### Identifying Unknown Models
