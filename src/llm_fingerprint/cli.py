@@ -9,6 +9,7 @@ from pathlib import Path
 from tqdm import tqdm
 
 from llm_fingerprint.generate import SamplesGenerator
+from llm_fingerprint.upload import SamplesUploader
 
 
 def cmd_generate(args: Namespace):
@@ -27,7 +28,11 @@ def cmd_generate(args: Namespace):
 
 def cmd_upload(args: Namespace):
     """Upload samples to ChromaDB."""
-    ...
+    uploader = SamplesUploader(
+        samples_path=args.samples_path,
+        collection_name=args.collection_name,
+    )
+    asyncio.run(uploader.main())
 
 
 def cmd_query(args: Namespace):
@@ -89,16 +94,16 @@ def main():
         help="Upload samples to ChromaDB",
     )
     upload_parser.add_argument(
-        "--embedding-model",
-        type=str,
-        required=True,
-        help="Embedding model for computing embeddings",
-    )
-    upload_parser.add_argument(
         "--samples-path",
         type=Path,
         required=True,
         help="Path to samples JSONL file",
+    )
+    upload_parser.add_argument(
+        "--collection-name",
+        type=str,
+        default="samples",
+        help="Name of the collection to upload samples to",
     )
     upload_parser.set_defaults(func=cmd_upload)
 
