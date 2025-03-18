@@ -25,6 +25,13 @@ generate-samples-for-all-models:
       --samples-path "./data/samples/{{timestamp}}.jsonl" \
       --samples-num 4
 
+test-generate-models-swapping:
+    llm-fingerprint generate \
+      --language-model {{llama_models}} {{mistral_models}} {{qwen_models}} {{gemma_models}} \
+      --prompts-path "./data/prompts/prompts_single_v1.jsonl" \
+      --samples-path "/tmp/llm_samples_{{timestamp}}.jsonl" \
+      --samples-num 1
+
 ################################################################################
 # ChromaDB
 ################################################################################
