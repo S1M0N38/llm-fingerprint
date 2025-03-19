@@ -42,7 +42,7 @@ LLM Fingerprint uses semantic similarity patterns across multiple prompts to cre
 ## Usage
 
 ```bash
-# Set required environment variables
+# Set required environment variables. See .envrc.example
 export LLM_API_KEY="your_api_key"
 export LLM_BASE_URL="https://api.provider.com/v1"
 export CHROMADB_MODEL="jinaai/jina-embeddings-v3"
@@ -55,10 +55,10 @@ export CHROMADB_DEVICE="cpu"
 ```bash
 # Generate samples for known model responses
 llm-fingerprint generate \
-  --language-model "known-model-name" \
-  --prompts-path "prompts.jsonl" \
+  --language-model "model-1" "model-2" "model-3" \
+  --prompts-path "./data/prompts/prompts_general_v1.jsonl" \
   --samples-path "samples.jsonl" \
-  --samples-num 5
+  --samples-num 4
 
 # Upload samples to ChromaDB
 llm-fingerprint upload \
@@ -69,18 +69,23 @@ llm-fingerprint upload \
 ### Identifying Unknown Models
 
 ```bash
-# Generate samples for unknown model
+# Generate samples for unknown model (or use an external service)
+# Let's suppose the we don't know we are using model-2
 llm-fingerprint generate \
-  --language-model "unknown-model-name" \
-  --prompts-path "prompts.jsonl" \
-  --samples-path "samples.jsonl" \
-  --samples-num 5
+  --language-model "model-2" \
+  --prompts-path "./data/prompts/prompts_single_v1.jsonl" \
+  --samples-path "unk-samples.jsonl" \
+  --samples-num 1
 
 # Query ChromaDB for model identification
 llm-fingerprint query \
-  --samples-path "samples.jsonl" \
-  --matches-path "matches.jsonl" \
-  --matches-num 5
+  --samples-path "unk-samples.jsonl" \
+  --results-path "results.jsonl" \
+  --results-num 2
+
+# matches.jsonl will contain the results
+# {"model": "model-2", "score": ... }
+# {"model": "model-1", "score": ... }
 ```
 
 ## Installation
@@ -96,31 +101,14 @@ cd llm-fingerprint
 uv venv
 
 # Install the package
-uv sync
-```
-
-## Models Local Deployment with Docker
-
-If you have a GPU available, you can run both the Language Model and embedding model locally using docker-compose:
-
-```bash
-# Set HF_HOME environment variable for model caching
-export HF_HOME="/path/to/huggingface/cache"
-
-# Start the models
-docker-compose up -d
-
-# Language model will be available at http://localhost:41408
-# Embedding model will be available at http://localhost:41409
-# ChromaDB will be available at http://localhost:41410
+uv sync # --all-groups # for installing ml and dev groups
 ```
 
 ## Requirements
 
 - Python 3.12+
-- OpenAI-compatible API endpoints (`/chat/completions` and `/embeddings`)
-- Access to ChromaDB (locally or hosted)
-- NVIDIA GPU (for local deployment with docker-compose)
+- OpenAI-compatible API endpoints (`/chat/completions`)
+- Access to ChromaDB capable of running Sentence Transformer models (locally or hosted)
 
 ## Contributing
 
