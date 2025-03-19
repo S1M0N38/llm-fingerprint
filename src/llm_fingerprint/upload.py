@@ -26,6 +26,10 @@ class SamplesUploader:
     def __init__(self, samples_path: Path, collection_name: str = "samples"):
         self.samples_path: Path = samples_path
         self.collection_name: str = collection_name
+        asyncio.run(self._init_client())
+
+    async def _init_client(self) -> None:
+        print("Initializing ChromaDB client...", end="", flush=True)
         self.embedding_function = (
             embedding_functions.SentenceTransformerEmbeddingFunction(  # type: ignore
                 model_name=CHROMADB_MODEL,
@@ -36,9 +40,6 @@ class SamplesUploader:
                 # to a specific version.
             )
         )
-        asyncio.run(self._init_client())
-
-    async def _init_client(self) -> None:
         self.client = await AsyncHttpClient(
             host=CHROMADB_HOST,
             port=CHROMADB_PORT,
@@ -48,22 +49,33 @@ class SamplesUploader:
             name=self.collection_name,
             embedding_function=self.embedding_function,  #  type: ignore
         )
+        print("done")
 
     async def upload_samples(self, samples: list[Sample]) -> None:
         prev_ids = await self.collection.get(
             ids=[sample.id for sample in samples], include=[]
         )
-        samples = [s for s in samples if s.id not in prev_ids]
-        await self.collection.add(
-            ids=[sample.id for sample in samples],
-            metadatas=[
-                sample.model_dump(
-                    include={"model", "prompt_id"},
-                )
-                for sample in samples
-            ],
-            documents=[sample.completion for sample in samples],
-        )
+
+        samples = [s for s in samples if s.id not in prev_ids["ids"]]
+        if samples:
+            print(
+                f'Uploading {len(samples)} new samples to "{self.collection_name}"...',
+                end="",
+                flush=True,
+            )
+            await self.collection.add(
+                ids=[sample.id for sample in samples],
+                metadatas=[
+                    sample.model_dump(
+                        include={"model", "prompt_id"},
+                    )
+                    for sample in samples
+                ],
+                documents=[sample.completion for sample in samples],
+            )
+            print("done")
+        else:
+            print(f'No new samples to upload to "{self.collection_name}"')
 
     async def load_samples(self) -> list[Sample]:
         with open(self.samples_path) as f:
@@ -72,14 +84,20 @@ class SamplesUploader:
 
     async def main(self):
         initial_count = await self.collection.count()
-        print(f"Collection {self.collection_name} has {initial_count} samples")
+        print(f'Collection "{self.collection_name}" has {initial_count} samples')
 
         samples = await self.load_samples()
         await self.upload_samples(samples)
 
         final_count = await self.collection.count()
-        diff_count = final_count - initial_count
-        print(
-            f"Collection {self.collection_name} has {diff_count} samples more "
-            f"(total {final_count})"
-        )
+        print(f'Collection "{self.collection_name}" has {final_count} samples')
+
+
+if __name__ == "__main__":
+    root = Path(__file__).parent.parent.parent
+    samples_path = root / "data/samples/20250316T174152.jsonl"
+    uploader = SamplesUploader(
+        samples_path=samples_path,
+        collection_name="test1",
+    )
+    asyncio.run(uploader.main())
