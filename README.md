@@ -47,6 +47,7 @@ export LLM_API_KEY="your_api_key"
 export LLM_BASE_URL="https://api.provider.com/v1"
 export CHROMADB_MODEL="jinaai/jina-embeddings-v3"
 export CHROMADB_URL="http://localhost:1235"
+export CHROMADB_DEVICE="cpu"
 ```
 
 ### Creating Model Fingerprints

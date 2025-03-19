@@ -10,6 +10,7 @@ from llm_fingerprint.models import Sample
 
 assert (CHROMADB_MODEL := os.getenv("CHROMADB_MODEL", ""))
 assert (CHROMADB_URL := os.getenv("CHROMADB_URL", ""))
+assert (CHROMADB_DEVICE := os.getenv("CHROMADB_DEVICE", "cpu"))
 
 chromadb_host = urlparse(CHROMADB_URL).hostname
 chromadb_port = urlparse(CHROMADB_URL).port
@@ -29,6 +30,7 @@ class SamplesUploader:
             embedding_functions.SentenceTransformerEmbeddingFunction(  # type: ignore
                 model_name=CHROMADB_MODEL,
                 trust_remote_code=True,
+                device=CHROMADB_DEVICE,
                 # NOTE: trust_remote_code=True is needed for some models.
                 # Use at you own risk. After downloading the model, you can pin it
                 # to a specific version.
