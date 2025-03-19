@@ -8,11 +8,9 @@ requires-python = ">=3.12"
 dependencies = [
   "aiofiles>=24.1.0",
   "chromadb>=0.6.3",
-  "einops>=0.8.1",
   "httpx>=0.28.1",
   "openai>=1.66.3",
   "pydantic>=2.10.6",
-  "sentence-transformers>=3.4.1",
   "tqdm>=4.67.1",
 ]
 
@@ -46,4 +44,10 @@ major_version_zero = true
 version_provider = "pep621"
 
 [dependency-groups]
-dev = ["commitizen>=4.4.1", "pre-commit>=4.1.0", "ruff>=0.10.0"]
+dev = [
+  "basedpyright>=1.28.2",
+  "commitizen>=4.4.1",
+  "pre-commit>=4.1.0",
+  "ruff>=0.10.0",
+]
+ml = ["einops>=0.8.1", "sentence-transformers>=3.4.1"]
