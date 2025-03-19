@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 from urllib.parse import urlparse
 
+import numpy as np
 from chromadb import AsyncHttpClient
 from chromadb.utils import embedding_functions
 
@@ -77,6 +78,42 @@ class SamplesUploader:
         else:
             print(f'No new samples to upload to "{self.collection_name}"')
 
+    async def upsert_centroid(self, model: str, prompt_id: str):
+        samples = await self.collection.get(
+            where={"$and": [{"model": model}, {"prompt_id": prompt_id}]},
+            include=["embeddings"],  # type: ignore
+        )
+        centroid = np.array(samples["embeddings"]).mean(axis=0).tolist()
+        centroid_id = f"centroid_{model}_{prompt_id}"
+        await self.collection.add(
+            ids=[centroid_id],
+            embeddings=[centroid],
+            metadatas=[
+                {
+                    "model": model,
+                    "prompt_id": prompt_id,
+                    "centroid": True,
+                    "sample_count": len(samples["ids"]),
+                }
+            ],
+        )
+
+    async def upsert_centroids(self) -> None:
+        print("Update/Inserting centroids...", end="", flush=True)
+
+        results = await self.collection.get(include=["metadatas"])  # type: ignore
+        assert results["metadatas"] is not None
+
+        model_prompt_pairs = set()
+        for metadata in results["metadatas"]:
+            if metadata and "model" in metadata and "prompt_id" in metadata:
+                model_prompt_pairs.add((metadata["model"], metadata["prompt_id"]))
+
+        for model, prompt_id in model_prompt_pairs:
+            await self.upsert_centroid(model, prompt_id)
+
+        print(f"done ({len(model_prompt_pairs)})")
+
     async def load_samples(self) -> list[Sample]:
         with open(self.samples_path) as f:
             samples = [Sample.model_validate_json(line) for line in f]
@@ -88,6 +125,8 @@ class SamplesUploader:
 
         samples = await self.load_samples()
         await self.upload_samples(samples)
+
+        await self.upsert_centroids()
 
         final_count = await self.collection.count()
         print(f'Collection "{self.collection_name}" has {final_count} samples')
