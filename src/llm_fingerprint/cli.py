@@ -9,6 +9,7 @@ from pathlib import Path
 from tqdm import tqdm
 
 from llm_fingerprint.generate import SamplesGenerator
+from llm_fingerprint.query import SamplesQuerier
 from llm_fingerprint.upload import SamplesUploader
 
 
@@ -37,7 +38,14 @@ def cmd_upload(args: Namespace):
 
 def cmd_query(args: Namespace):
     """Query ChromaDB for model identification."""
-    ...
+    args.results_path.parent.mkdir(parents=True, exist_ok=True)
+    querier = SamplesQuerier(
+        samples_path=args.samples_path,
+        retults_path=args.results_path,
+        results_num=args.results_num,
+        collection_name=args.collection_name,
+    )
+    asyncio.run(querier.main())
 
 
 def main():
@@ -86,7 +94,6 @@ def main():
         default=2048,
         help="Maximum number of tokens to generate",
     )
-    generate_parser.set_defaults(func=cmd_generate)
 
     # Upload command
     upload_parser = subparsers.add_parser(
@@ -105,7 +112,6 @@ def main():
         default="samples",
         help="Name of the collection to upload samples to",
     )
-    upload_parser.set_defaults(func=cmd_upload)
 
     # Query command
     query_parser = subparsers.add_parser(
@@ -119,18 +125,17 @@ def main():
         help="Path to samples JSONL file",
     )
     query_parser.add_argument(
-        "--matches-path",
+        "--results-path",
         type=Path,
         required=True,
-        help="Path to save matched models",
+        help="Path to save returned results",
     )
     query_parser.add_argument(
-        "--matches-num",
+        "--results-num",
         type=int,
         default=5,
-        help="Number of model matches to return",
+        help="Number of results to return",
     )
-    query_parser.set_defaults(func=cmd_query)
 
     args = parser.parse_args()
 
