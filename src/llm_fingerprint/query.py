@@ -64,14 +64,11 @@ class SamplesQuerier:
     async def query_sample(self, sample: Sample) -> list[Result]:
         """Query a sample against the database and return results."""
 
-        # BUG: we are actually querying over the colletion of all samples. So I
-        # will get retults for that, i.e. most similar samples (so from the
-        # same prompt). Introduce centroids in uploading
         query_results = await self.collection.query(
             query_texts=sample.completion,
             n_results=self.results_num,
             include=["metadatas", "distances"],  # type: ignore
-            where={"prompt_id": sample.prompt_id},
+            where={"$and": [{"centroid": True}, {"prompt_id": sample.prompt_id}]},
         )
 
         assert query_results["metadatas"] is not None
@@ -154,7 +151,7 @@ if __name__ == "__main__":
     querier = SamplesQuerier(
         samples_path=samples_path,
         retults_path=results_path,
-        results_num=416,
+        results_num=5,
         collection_name="test1",
     )
 
