@@ -21,6 +21,13 @@ llm-fingerprint = "llm_fingerprint.cli:main"
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+addopts = "-v"
+testpaths = ["tests"]
+markers = ["llm: mark test as requiring LLM API access"]
+
 [tool.ruff.lint]
 extend-select = ["I"]
 task-tags = ["FIXME", "TODO", "HACK", "WARN", "PERF", "NOTE", "TEST"]
@@ -33,6 +40,7 @@ dev = [
   "basedpyright>=1.28.2",
   "commitizen>=4.4.1",
   "pre-commit>=4.1.0",
+  "pytest-asyncio>=0.25.3",
   "ruff>=0.10.0",
 ]
 ml = ["einops>=0.8.1", "sentence-transformers>=3.4.1"]
