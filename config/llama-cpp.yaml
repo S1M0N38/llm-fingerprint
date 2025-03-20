@@ -341,3 +341,20 @@ models:
       --seed 42
       --temp 0.2
       --top-p 0.95
+
+  #############################################################################
+  # Model used for tests
+  #############################################################################
+
+  "test-model":
+    proxy: "http://127.0.0.1:9999"
+    cmd: >
+      /opt/homebrew/bin/llama-server
+      -m ./tests/models/smollm-2-135m/SmolLM2-135M-Instruct-Q4_K_M.gguf
+      -c 8192
+      -np 4
+      --threads 8
+      --port 9999
+      --seed 42
+      --temp 0.2
+      --top-p 0.95
