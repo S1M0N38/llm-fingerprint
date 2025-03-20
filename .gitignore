@@ -19,5 +19,6 @@ wheels/
 # llama-swap binary
 llama-swap
 
-# Models dierecotry
+# Models dierecotries
 models
+tests/models
