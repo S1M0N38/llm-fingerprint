@@ -28,7 +28,7 @@ addopts = "-v"
 testpaths = ["tests"]
 markers = [
   "llm: mark test as requiring LLM API access",
-  "integration: mark test as an integration test that may have external dependencies",
+  "db: mark test as requiring database access",
 ]
 [tool.ruff.lint]
 extend-select = ["I"]
