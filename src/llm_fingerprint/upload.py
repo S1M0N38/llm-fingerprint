@@ -63,9 +63,11 @@ class SamplesUploader:
             await self.collection.add(
                 ids=[sample.id for sample in samples],
                 metadatas=[
-                    sample.model_dump(
-                        include={"model", "prompt_id"},
-                    )
+                    {
+                        "model": sample.model,
+                        "prompt_id": sample.prompt_id,
+                        "centroid": False,
+                    }
                     for sample in samples
                 ],
                 documents=[sample.completion for sample in samples],
