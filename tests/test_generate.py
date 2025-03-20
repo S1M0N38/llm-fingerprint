@@ -216,7 +216,6 @@ def integration_prompts_file(integration_prompts, tmp_path):
 
 
 @pytest.mark.llm
-@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_integration_sample_generation(integration_prompts_file, tmp_path):
     """Test the complete sample generation pipeline with real API calls."""
@@ -281,7 +280,6 @@ async def test_integration_sample_generation(integration_prompts_file, tmp_path)
 
 
 @pytest.mark.llm
-@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_integration_error_handling(integration_prompts_file, tmp_path):
     """Test error handling in real API scenarios."""
