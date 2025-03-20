@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.1](https://github.com/S1M0N38/llm-fingerprint/compare/v0.1.0...v0.1.1) (2025-03-20)
+
+
+### Bug Fixes
+
+* **upload:** move initialization from `__init__` to main ([cfbac6b](https://github.com/S1M0N38/llm-fingerprint/commit/cfbac6b5cc59132bd762110bc5e1402a5d1189c7))
+* **upload:** set centroid metadata key for samples to false ([721ef93](https://github.com/S1M0N38/llm-fingerprint/commit/721ef9335708adb2fe46ebb3f4892d65591b02f7))
+
+
+### Documentation
+
+* **CONTRIBUTING:** add how to contribute and project structure sections ([40bf332](https://github.com/S1M0N38/llm-fingerprint/commit/40bf3327a4ac492ca88ef4a8e8af6fccd53914c2))
+
 ## 0.1.0 (2025-03-19)
 
 
