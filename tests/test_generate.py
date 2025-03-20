@@ -1,13 +1,19 @@
 """Tests for the SamplesGenerator class."""
 
 import json
+import os
 import uuid
 from pathlib import Path
 
 import pytest
+from openai import NotFoundError
 
 from llm_fingerprint.generate import SamplesGenerator
 from llm_fingerprint.models import Prompt, Sample
+
+################################################################################
+# Unit tests for the SamplesGenerator class
+################################################################################
 
 
 @pytest.fixture
@@ -178,3 +184,121 @@ async def test_main(
         assert expected_text in sample["completion"].lower(), (
             f"Expected '{expected_text}' in response to '{prompt.prompt}'"
         )
+
+
+################################################################################
+# Integration tests for the SamplesGenerator class
+################################################################################
+
+
+@pytest.fixture
+def integration_prompts():
+    """Create a small set of diverse prompts for integration testing."""
+    prompt_texts = [
+        "Write a haiku about programming.",
+        "Explain quantum computing in one sentence.",
+        "List three advantages of using Python for data analysis.",
+    ]
+    return [
+        Prompt(id=str(uuid.uuid5(uuid.NAMESPACE_DNS, text)), prompt=text)
+        for text in prompt_texts
+    ]
+
+
+@pytest.fixture
+def integration_prompts_file(integration_prompts, tmp_path):
+    """Create a temporary prompts file with integration test prompts."""
+    temp_file = tmp_path / "integration_prompts.jsonl"
+    with open(temp_file, "w") as f:
+        for prompt in integration_prompts:
+            f.write(prompt.model_dump_json() + "\n")
+    return temp_file
+
+
+@pytest.mark.llm
+@pytest.mark.integration
+@pytest.mark.asyncio
+async def test_integration_sample_generation(integration_prompts_file, tmp_path):
+    """Test the complete sample generation pipeline with real API calls."""
+
+    assert os.getenv("LLM_API_KEY"), "LLM_API_KEY environment variable is required"
+    assert os.getenv("LLM_BASE_URL"), "LLM_BASE_URL environment variable is required"
+
+    test_model = "test-model"
+    samples_num = 2
+    max_tokens = 256
+    samples_path = tmp_path / "integration_samples.jsonl"
+
+    generator = SamplesGenerator(
+        language_model=test_model,
+        prompts_path=integration_prompts_file,
+        samples_path=samples_path,
+        samples_num=samples_num,
+        max_tokens=max_tokens,
+        concurrent_requests=2,
+    )
+
+    await generator.main()
+    assert samples_path.exists(), "Samples file was not created"
+
+    with open(samples_path) as f:
+        samples = [json.loads(line) for line in f]
+
+    expected_sample_count = 3 * samples_num
+    assert len(samples) == expected_sample_count, (
+        f"Expected {expected_sample_count} samples, got {len(samples)}"
+    )
+
+    for sample in samples:
+        # Check required fields
+        assert "id" in sample, "Sample missing 'id' field"
+        assert "model" in sample, "Sample missing 'model' field"
+        assert "prompt_id" in sample, "Sample missing 'prompt_id' field"
+        assert "completion" in sample, "Sample missing 'completion' field"
+
+        # Validate field values
+        assert sample["model"] == test_model, (
+            f"Expected model '{test_model}', got '{sample['model']}'"
+        )
+        assert sample["completion"], "Sample completion is empty"
+
+    with open(integration_prompts_file) as f:
+        prompts = [json.loads(line) for line in f]
+
+    prompt_ids = {prompt["id"] for prompt in prompts}
+    sample_prompt_ids = {sample["prompt_id"] for sample in samples}
+    assert prompt_ids == sample_prompt_ids, "Not all prompts were used"
+
+    prompt_id_counts = {}
+    for sample in samples:
+        prompt_id = sample["prompt_id"]
+        prompt_id_counts[prompt_id] = prompt_id_counts.get(prompt_id, 0) + 1
+
+    for prompt_id, count in prompt_id_counts.items():
+        assert count == samples_num, (
+            f"Expected {samples_num} samples for prompt {prompt_id}, got {count}"
+        )
+
+
+@pytest.mark.llm
+@pytest.mark.integration
+@pytest.mark.asyncio
+async def test_integration_error_handling(integration_prompts_file, tmp_path):
+    """Test error handling in real API scenarios."""
+    samples_path = tmp_path / "error_samples.jsonl"
+
+    generator = SamplesGenerator(
+        language_model="invalid-model-name-that-doesnt-exist",
+        prompts_path=integration_prompts_file,
+        samples_path=samples_path,
+        samples_num=1,
+        max_tokens=100,
+        concurrent_requests=1,
+    )
+
+    with pytest.raises(NotFoundError) as excinfo:
+        await generator.main()
+
+    assert "invalid-model-name-that-doesnt-exist" in str(excinfo.value)
+
+    await generator.client.close()
