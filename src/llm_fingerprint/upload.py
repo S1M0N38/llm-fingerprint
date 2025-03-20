@@ -27,18 +27,14 @@ class SamplesUploader:
     def __init__(self, samples_path: Path, collection_name: str = "samples"):
         self.samples_path: Path = samples_path
         self.collection_name: str = collection_name
-        asyncio.run(self._init_client())
 
-    async def _init_client(self) -> None:
+    async def initialize(self) -> None:
         print("Initializing ChromaDB client...", end="", flush=True)
         self.embedding_function = (
             embedding_functions.SentenceTransformerEmbeddingFunction(  # type: ignore
                 model_name=CHROMADB_MODEL,
                 trust_remote_code=True,
                 device=CHROMADB_DEVICE,
-                # NOTE: trust_remote_code=True is needed for some models.
-                # Use at you own risk. After downloading the model, you can pin it
-                # to a specific version.
             )
         )
         self.client = await AsyncHttpClient(
@@ -48,7 +44,7 @@ class SamplesUploader:
         assert await self.client.heartbeat(), "0 BPM for chromadb"
         self.collection = await self.client.get_or_create_collection(
             name=self.collection_name,
-            embedding_function=self.embedding_function,  #  type: ignore
+            embedding_function=self.embedding_function,
         )
         print("done")
 
@@ -120,6 +116,8 @@ class SamplesUploader:
         return samples
 
     async def main(self):
+        await self.initialize()
+
         initial_count = await self.collection.count()
         print(f'Collection "{self.collection_name}" has {initial_count} samples')
 
