@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
-from llm_fingerprint.cli import cmd_generate, cmd_query, cmd_upload
+from llm_fingerprint.cli import cmd_generate, cmd_query, cmd_upload, main
 
 
 @pytest.fixture
@@ -79,3 +79,50 @@ async def test_cmd_query(mock_class_with_async_main, tmp_path):
             mock_querier_class.assert_called_once()
             mock_main.assert_called_once()
             mock_run.assert_called_once()
+
+
+@pytest.mark.cli
+@pytest.mark.parametrize(
+    "args,patched_function",
+    [
+        (
+            [
+                "llm-fingerprint",
+                "generate",
+                "--language-model",
+                "test-model",
+                "--prompts-path",
+                "test.jsonl",
+                "--samples-path",
+                "samples.jsonl",
+            ],
+            "llm_fingerprint.cli.cmd_generate",
+        ),
+        (
+            [
+                "llm-fingerprint",
+                "upload",
+                "--samples-path",
+                "test.jsonl",
+            ],
+            "llm_fingerprint.cli.cmd_upload",
+        ),
+        (
+            [
+                "llm-fingerprint",
+                "query",
+                "--samples-path",
+                "test.jsonl",
+                "--results-path",
+                "results.jsonl",
+            ],
+            "llm_fingerprint.cli.cmd_query",
+        ),
+    ],
+)
+def test_main(args, patched_function):
+    """Test the main CLI entry point with different commands."""
+    with patch("sys.argv", args):
+        with patch(patched_function) as mock:
+            main()
+            mock.assert_called_once()
