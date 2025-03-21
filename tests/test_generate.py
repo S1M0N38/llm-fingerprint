@@ -17,7 +17,7 @@ from llm_fingerprint.models import Prompt, Sample
 
 
 @pytest.fixture
-def test_prompt_texts():
+def prompt_texts():
     """Return 3 simple prompts with predictable answers for testing."""
     return [
         "What's the capital of France? Just responde with one word",
@@ -27,7 +27,7 @@ def test_prompt_texts():
 
 
 @pytest.fixture
-def test_completion_texts():
+def completion_texts():
     """Return the responses for the test prompts."""
     return [
         "paris",
@@ -37,20 +37,20 @@ def test_completion_texts():
 
 
 @pytest.fixture
-def test_prompts(test_prompt_texts):
+def prompts(prompt_texts):
     """Create prompt objects with the same structure as the real ones."""
     return [
         Prompt(id=str(uuid.uuid5(uuid.NAMESPACE_DNS, text)), prompt=text)
-        for text in test_prompt_texts
+        for text in prompt_texts
     ]
 
 
 @pytest.fixture
-def temp_prompts_file(test_prompts, tmp_path):
+def temp_prompts_file(prompts, tmp_path):
     """Create a temporary prompts file with test prompts."""
     temp_file = tmp_path / "test_prompts.jsonl"
     with open(temp_file, "w") as f:
-        for prompt in test_prompts:
+        for prompt in prompts:
             f.write(prompt.model_dump_json() + "\n")
     return temp_file
 
@@ -81,7 +81,7 @@ def test_samples_generator_init():
 
 
 @pytest.mark.asyncio
-async def test_load_prompts(temp_prompts_file, test_prompts):
+async def test_load_prompts(temp_prompts_file, prompts):
     """Test loading prompts from a file."""
     generator = SamplesGenerator(
         language_model="test-model",
@@ -95,13 +95,13 @@ async def test_load_prompts(temp_prompts_file, test_prompts):
     assert len(prompts) == 3
     assert all(isinstance(prompt, Prompt) for prompt in prompts)
     prompt_ids = {prompt.id for prompt in prompts}
-    expected_ids = {prompt.id for prompt in test_prompts}
+    expected_ids = {prompt.id for prompt in prompts}
     assert prompt_ids == expected_ids
 
 
 @pytest.mark.llm
 @pytest.mark.asyncio
-async def test_generate_sample(test_prompts, test_completion_texts):
+async def test_generate_sample(prompts, completion_texts):
     """Test generating a sample from a prompt."""
     generator = SamplesGenerator(
         language_model="test-model",
@@ -112,17 +112,17 @@ async def test_generate_sample(test_prompts, test_completion_texts):
     )
 
     # Test with the first prompt ("What's the capital of France?")
-    sample = await generator.generate_sample(test_prompts[0])
+    sample = await generator.generate_sample(prompts[0])
 
     assert sample.id is not None
     assert sample.model == "test-model"
-    assert sample.prompt_id == test_prompts[0].id
+    assert sample.prompt_id == prompts[0].id
     assert sample.completion is not None
     assert len(sample.completion) > 0
 
     completion_lower = sample.completion.lower()
-    assert test_completion_texts[0] in completion_lower, (
-        f"Expected '{test_completion_texts[0]}' in: {sample.completion}"
+    assert completion_texts[0] in completion_lower, (
+        f"Expected '{completion_texts[0]}' in: {sample.completion}"
     )
 
 
@@ -157,9 +157,7 @@ async def test_save_sample(temp_samples_file):
 
 @pytest.mark.llm
 @pytest.mark.asyncio
-async def test_main(
-    temp_prompts_file, temp_samples_file, test_prompts, test_completion_texts
-):
+async def test_main(temp_prompts_file, temp_samples_file, prompts, completion_texts):
     """Test the main function with real API calls."""
     generator = SamplesGenerator(
         language_model="test-model",
@@ -176,10 +174,10 @@ async def test_main(
     assert len(samples) == 3
     assert all(sample["model"] == "test-model" for sample in samples)
     assert {sample["prompt_id"] for sample in samples} == {
-        prompt.id for prompt in test_prompts
+        prompt.id for prompt in prompts
     }
 
-    for prompt, expected_text in zip(test_prompts, test_completion_texts):
+    for prompt, expected_text in zip(prompts, completion_texts):
         sample = next(s for s in samples if s["prompt_id"] == prompt.id)
         assert expected_text in sample["completion"].lower(), (
             f"Expected '{expected_text}' in response to '{prompt.prompt}'"

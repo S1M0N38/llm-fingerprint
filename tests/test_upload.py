@@ -21,7 +21,7 @@ NUM_PROMPTS = 3
 
 # Fixtures
 @pytest.fixture
-def test_samples():
+def samples():
     """Create test samples with known content."""
     return [
         Sample(
@@ -37,23 +37,23 @@ def test_samples():
 
 
 @pytest.fixture
-def temp_samples_file(test_samples, tmp_path):
+def temp_samples_file(samples, tmp_path):
     """Create a temporary samples file with test samples."""
     temp_file = tmp_path / "test_samples.jsonl"
     with open(temp_file, "w") as f:
-        for sample in test_samples:
+        for sample in samples:
             f.write(sample.model_dump_json() + "\n")
     return temp_file
 
 
 @pytest.fixture
-def test_collection_name():
+def collection_name():
     """Create a unique collection name for testing."""
     return f"test_collection_{uuid.uuid4().hex[:8]}"
 
 
 @pytest.fixture
-async def test_client(test_collection_name):
+async def client(collection_name):
     """Setup/Teardown for database client for testing."""
     chromadb_host = urlparse(CHROMADB_URL).hostname
     chromadb_port = urlparse(CHROMADB_URL).port
@@ -66,13 +66,13 @@ async def test_client(test_collection_name):
     )
 
     yield client
-    await client.delete_collection(test_collection_name)
+    await client.delete_collection(collection_name)
 
 
 @pytest.fixture
-async def test_collection(test_client, test_collection_name):
+async def collection(client, collection_name):
     """Get the collection for testing."""
-    collection = await test_client.get_or_create_collection(test_collection_name)
+    collection = await client.get_or_create_collection(collection_name)
     yield collection
 
 
@@ -85,47 +85,47 @@ async def test_collection(test_client, test_collection_name):
 @pytest.mark.asyncio
 async def test_uploader_init(
     temp_samples_file,
-    test_collection_name,
-    test_client,
+    collection_name,
+    client,
 ):
     """Test initialization of SamplesUploader."""
     uploader = SamplesUploader(
-        samples_path=temp_samples_file, collection_name=test_collection_name
+        samples_path=temp_samples_file, collection_name=collection_name
     )
     await uploader.initialize()
 
     # Check attributes
     assert uploader.samples_path == temp_samples_file
-    assert uploader.collection_name == test_collection_name
+    assert uploader.collection_name == collection_name
 
     # Check collection was created
-    collections = await test_client.list_collections()
-    assert test_collection_name in collections
+    collections = await client.list_collections()
+    assert collection_name in collections
 
 
 @pytest.mark.db
 @pytest.mark.asyncio
-async def test_load_samples(temp_samples_file, test_collection_name, test_samples):
+async def test_load_samples(temp_samples_file, collection_name, samples):
     """Test loading samples from file."""
     uploader = SamplesUploader(
-        samples_path=temp_samples_file, collection_name=test_collection_name
+        samples_path=temp_samples_file, collection_name=collection_name
     )
 
-    samples = await uploader.load_samples()
+    samples_loaded = await uploader.load_samples()
 
-    assert len(samples) == len(test_samples)
-    sample_ids = {sample.id for sample in samples}
-    expected_ids = {sample.id for sample in test_samples}
+    assert len(samples_loaded) == len(samples)
+    sample_ids = {sample.id for sample in samples_loaded}
+    expected_ids = {sample.id for sample in samples}
     assert sample_ids == expected_ids
 
 
 @pytest.mark.db
 @pytest.mark.asyncio
-async def test_upload_samples(temp_samples_file, test_collection_name, test_collection):
+async def test_upload_samples(temp_samples_file, collection_name, collection):
     """Test uploading samples to ChromaDB."""
 
     uploader = SamplesUploader(
-        samples_path=temp_samples_file, collection_name=test_collection_name
+        samples_path=temp_samples_file, collection_name=collection_name
     )
     await uploader.initialize()
 
@@ -133,7 +133,7 @@ async def test_upload_samples(temp_samples_file, test_collection_name, test_coll
     await uploader.upload_samples(samples)
 
     # Check samples were uploaded
-    result = await test_collection.get(
+    result = await collection.get(
         ids=[sample.id for sample in samples],
         include=["metadatas"],  # type: ignore
     )
@@ -145,13 +145,11 @@ async def test_upload_samples(temp_samples_file, test_collection_name, test_coll
 
 @pytest.mark.db
 @pytest.mark.asyncio
-async def test_skip_existing_samples(
-    temp_samples_file, test_collection_name, test_collection
-):
+async def test_skip_existing_samples(temp_samples_file, collection_name, collection):
     """Test that existing samples are skipped during upload."""
 
     uploader = SamplesUploader(
-        samples_path=temp_samples_file, collection_name=test_collection_name
+        samples_path=temp_samples_file, collection_name=collection_name
     )
     await uploader.initialize()
 
@@ -165,19 +163,17 @@ async def test_skip_existing_samples(
     await uploader.upload_samples(samples)
 
     # Check count matches total samples
-    count = await test_collection.count()
+    count = await collection.count()
     assert count == len(samples)
 
 
 @pytest.mark.db
 @pytest.mark.asyncio
-async def test_upsert_centroid(
-    temp_samples_file, test_collection_name, test_collection
-):
+async def test_upsert_centroid(temp_samples_file, collection_name, collection):
     """Test creating a centroid for a model-prompt combination."""
 
     uploader = SamplesUploader(
-        samples_path=temp_samples_file, collection_name=test_collection_name
+        samples_path=temp_samples_file, collection_name=collection_name
     )
     await uploader.initialize()
 
@@ -192,7 +188,7 @@ async def test_upsert_centroid(
 
     # Check centroid exists
     centroid_id = f"centroid_{model}_{prompt_id}"
-    result = await test_collection.get(ids=[centroid_id], include=["metadatas"])  # type: ignore
+    result = await collection.get(ids=[centroid_id], include=["metadatas"])  # type: ignore
 
     assert len(result["ids"]) == 1
     assert result["metadatas"] is not None
@@ -204,13 +200,11 @@ async def test_upsert_centroid(
 
 @pytest.mark.db
 @pytest.mark.asyncio
-async def test_upsert_centroids(
-    temp_samples_file, test_collection_name, test_collection
-):
+async def test_upsert_centroids(temp_samples_file, collection_name, collection):
     """Test creating centroids for all model-prompt combinations."""
 
     uploader = SamplesUploader(
-        samples_path=temp_samples_file, collection_name=test_collection_name
+        samples_path=temp_samples_file, collection_name=collection_name
     )
     await uploader.initialize()
 
@@ -218,7 +212,7 @@ async def test_upsert_centroids(
     await uploader.upload_samples(samples)
     await uploader.upsert_centroids()
 
-    centroids = await test_collection.get(
+    centroids = await collection.get(
         where={"centroid": True},
         include=["metadatas"],  # type: ignore
     )
@@ -226,37 +220,37 @@ async def test_upsert_centroids(
 
     for sample in samples:
         centroid_id = f"centroid_{sample.model}_{sample.prompt_id}"
-        result = await test_collection.get(ids=[centroid_id], include=["metadatas"])  # type: ignore
+        result = await collection.get(ids=[centroid_id], include=["metadatas"])  # type: ignore
         assert len(result["ids"]) == 1
 
 
 @pytest.mark.db
 @pytest.mark.asyncio
-async def test_main_function(temp_samples_file, test_collection_name, test_collection):
+async def test_main_function(temp_samples_file, collection_name, collection):
     """Test the main function for the complete upload process."""
 
     uploader = SamplesUploader(
-        samples_path=temp_samples_file, collection_name=test_collection_name
+        samples_path=temp_samples_file, collection_name=collection_name
     )
 
-    count = await test_collection.count()
+    count = await collection.count()
     assert count == 0
 
     await uploader.main()
 
-    samples = await test_collection.get(
+    samples = await collection.get(
         where={"centroid": False},
         include=["documents"],  # type: ignore
     )
     assert len(samples["ids"]) == NUM_SAMPLES * NUM_MODELS * NUM_PROMPTS
 
-    centroids = await test_collection.get(
+    centroids = await collection.get(
         where={"centroid": True},
         include=["metadatas"],  # type: ignore
     )
     assert len(centroids["ids"]) == NUM_MODELS * NUM_PROMPTS
 
-    count = await test_collection.count()
+    count = await collection.count()
     assert count == NUM_SAMPLES * NUM_MODELS * NUM_PROMPTS + NUM_MODELS * NUM_PROMPTS
 
 
@@ -267,9 +261,7 @@ async def test_main_function(temp_samples_file, test_collection_name, test_colle
 
 @pytest.mark.db
 @pytest.mark.asyncio
-async def test_integration_upload_workflow(
-    tmp_path, test_collection_name, test_collection
-):
+async def test_integration_upload_workflow(tmp_path, collection_name, collection):
     """Test the complete workflow from sample creation to upload."""
 
     NUM_SAMPLES = 4
@@ -299,13 +291,13 @@ async def test_integration_upload_workflow(
 
     # Run uploader
     uploader = SamplesUploader(
-        samples_path=samples_path, collection_name=test_collection_name
+        samples_path=samples_path, collection_name=collection_name
     )
 
     await uploader.main()
 
     # Check results
-    count = await test_collection.count()
+    count = await collection.count()
     assert count == NUM_CENTROIDS + TOT_NUM_SAMPLES
 
     # Check samples
