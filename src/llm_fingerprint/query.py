@@ -37,15 +37,15 @@ class SamplesQuerier:
         self.results_path: Path = retults_path
         self.results_num: int = results_num
         self.collection_name: str = collection_name
+
+    async def initialize(self) -> None:
+        print("Initializing ChromaDB client...", end="", flush=True)
         self.embedding_function = (
             embedding_functions.SentenceTransformerEmbeddingFunction(  # type: ignore
                 model_name=CHROMADB_MODEL,
                 trust_remote_code=True,
             )
         )
-        asyncio.run(self._init_client())
-
-    async def _init_client(self) -> None:
         self.client = await AsyncHttpClient(
             host=CHROMADB_HOST,
             port=CHROMADB_PORT,
@@ -55,6 +55,7 @@ class SamplesQuerier:
             name=self.collection_name,
             embedding_function=self.embedding_function,
         )
+        print("done")
 
     async def load_samples(self) -> list[Sample]:
         with open(self.samples_path) as f:
@@ -107,8 +108,10 @@ class SamplesQuerier:
         return agg_results
 
     async def query_samples(self, samples: list[Sample]) -> list[Result]:
+        print(f"Querying {len(samples)} samples...", end="", flush=True)
         results_list = [await self.query_sample(sample) for sample in samples]
         results = self.aggeregate_results(results_list)
+        print("done")
         return results
 
     async def save_results(self, results: list[Result]) -> None:
@@ -117,6 +120,8 @@ class SamplesQuerier:
                 await f.write(result.model_dump_json() + "\n")
 
     async def main(self):
+        await self.initialize()
+
         print(f"Querying collection {self.collection_name} for results")
         samples = await self.load_samples()
 
@@ -139,7 +144,7 @@ if __name__ == "__main__":
 
     # Generate samples
     generator = SamplesGenerator(
-        language_model="llama-3.1-8b",
+        language_model="test-model",
         prompts_path=prompts_path,
         samples_path=samples_path,
         samples_num=1,
