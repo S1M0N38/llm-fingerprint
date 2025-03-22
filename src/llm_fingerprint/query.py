@@ -8,19 +8,13 @@ from urllib.parse import urlparse
 
 import aiofiles
 from chromadb import AsyncHttpClient
-from chromadb.utils import embedding_functions
+from openai import AsyncOpenAI
 
 from llm_fingerprint.models import Result, Sample
 
-assert (CHROMADB_MODEL := os.getenv("CHROMADB_MODEL", ""))
+assert (EMB_API_KEY := os.getenv("EMB_API_KEY", ""))
+assert (EMB_BASE_URL := os.getenv("EMB_BASE_URL", ""))
 assert (CHROMADB_URL := os.getenv("CHROMADB_URL", ""))
-
-chromadb_host = urlparse(CHROMADB_URL).hostname
-chromadb_port = urlparse(CHROMADB_URL).port
-assert isinstance(chromadb_host, str)
-assert isinstance(chromadb_port, int)
-CHROMADB_HOST = chromadb_host
-CHROMADB_PORT = chromadb_port
 
 
 class SamplesQuerier:
@@ -28,11 +22,13 @@ class SamplesQuerier:
 
     def __init__(
         self,
+        embedding_model: str,
         samples_path: Path,
         retults_path: Path,
         results_num: int = 5,
         collection_name: str = "samples",
     ):
+        self.embedding_model: str = embedding_model
         self.samples_path: Path = samples_path
         self.results_path: Path = retults_path
         self.results_num: int = results_num
@@ -40,20 +36,22 @@ class SamplesQuerier:
 
     async def initialize(self) -> None:
         print("Initializing ChromaDB client...", end="", flush=True)
-        self.embedding_function = (
-            embedding_functions.SentenceTransformerEmbeddingFunction(  # type: ignore
-                model_name=CHROMADB_MODEL,
-                trust_remote_code=True,
-            )
+        chromadb_host = urlparse(CHROMADB_URL).hostname
+        chromadb_port = urlparse(CHROMADB_URL).port
+        assert isinstance(chromadb_host, str), "Cannot parse ChromaDB URL (hostname)"
+        assert isinstance(chromadb_port, int), "Cannot parse ChromaDB URL (port)"
+
+        self.emb_client = AsyncOpenAI(
+            api_key=EMB_API_KEY,
+            base_url=EMB_BASE_URL,
         )
-        self.client = await AsyncHttpClient(
-            host=CHROMADB_HOST,
-            port=CHROMADB_PORT,
+        self.db_client = await AsyncHttpClient(
+            host=chromadb_host,
+            port=chromadb_port,
         )
-        assert await self.client.heartbeat(), "0 BPM for chromadb"
-        self.collection = await self.client.get_collection(
+        self.collection = await self.db_client.get_collection(
             name=self.collection_name,
-            embedding_function=self.embedding_function,
+            embedding_function=None,
         )
         print("done")
 
@@ -65,8 +63,15 @@ class SamplesQuerier:
     async def query_sample(self, sample: Sample) -> list[Result]:
         """Query a sample against the database and return results."""
 
+        response = await self.emb_client.embeddings.create(
+            input=[sample.completion],
+            model=self.embedding_model,
+        )
+
+        assert response.data
+
         query_results = await self.collection.query(
-            query_texts=sample.completion,
+            query_embeddings=response.data[0].embedding,
             n_results=self.results_num,
             include=["metadatas", "distances"],  # type: ignore
             where={"$and": [{"centroid": True}, {"prompt_id": sample.prompt_id}]},
@@ -154,6 +159,7 @@ if __name__ == "__main__":
 
     # Query samples
     querier = SamplesQuerier(
+        embedding_model="jinaai/jina-embeddings-v2-base-en",
         samples_path=samples_path,
         retults_path=results_path,
         results_num=5,

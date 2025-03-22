@@ -5,46 +5,47 @@ from urllib.parse import urlparse
 
 import numpy as np
 from chromadb import AsyncHttpClient
-from chromadb.utils import embedding_functions
+from openai import AsyncOpenAI
 
 from llm_fingerprint.models import Sample
 
-assert (CHROMADB_MODEL := os.getenv("CHROMADB_MODEL", ""))
+assert (EMB_API_KEY := os.getenv("EMB_API_KEY", ""))
+assert (EMB_BASE_URL := os.getenv("EMB_BASE_URL", ""))
 assert (CHROMADB_URL := os.getenv("CHROMADB_URL", ""))
-assert (CHROMADB_DEVICE := os.getenv("CHROMADB_DEVICE", "cpu"))
 
-chromadb_host = urlparse(CHROMADB_URL).hostname
-chromadb_port = urlparse(CHROMADB_URL).port
-assert isinstance(chromadb_host, str)
-assert isinstance(chromadb_port, int)
-CHROMADB_HOST = chromadb_host
-CHROMADB_PORT = chromadb_port
+EMB_BATCH_SIZE = 32
 
 
 class SamplesUploader:
     """Class for uploading samples and theri embeddings to ChromaDB."""
 
-    def __init__(self, samples_path: Path, collection_name: str = "samples"):
+    def __init__(
+        self,
+        embedding_model: str,
+        samples_path: Path,
+        collection_name: str = "samples",
+    ):
+        self.embedding_model: str = embedding_model
         self.samples_path: Path = samples_path
         self.collection_name: str = collection_name
 
     async def initialize(self) -> None:
         print("Initializing ChromaDB client...", end="", flush=True)
-        self.embedding_function = (
-            embedding_functions.SentenceTransformerEmbeddingFunction(  # type: ignore
-                model_name=CHROMADB_MODEL,
-                trust_remote_code=True,
-                device=CHROMADB_DEVICE,
-            )
+        chromadb_host = urlparse(CHROMADB_URL).hostname
+        chromadb_port = urlparse(CHROMADB_URL).port
+        assert isinstance(chromadb_host, str), "Cannot parse ChromaDB URL (hostname)"
+        assert isinstance(chromadb_port, int), "Cannot parse ChromaDB URL (port)"
+        self.emb_client = AsyncOpenAI(
+            api_key=EMB_API_KEY,
+            base_url=EMB_BASE_URL,
         )
-        self.client = await AsyncHttpClient(
-            host=CHROMADB_HOST,
-            port=CHROMADB_PORT,
+        self.db_client = await AsyncHttpClient(
+            host=chromadb_host,
+            port=chromadb_port,
         )
-        assert await self.client.heartbeat(), "0 BPM for chromadb"
-        self.collection = await self.client.get_or_create_collection(
+        self.collection = await self.db_client.get_or_create_collection(
             name=self.collection_name,
-            embedding_function=self.embedding_function,
+            embedding_function=None,
         )
         print("done")
 
@@ -60,18 +61,30 @@ class SamplesUploader:
                 end="",
                 flush=True,
             )
-            await self.collection.add(
-                ids=[sample.id for sample in samples],
-                metadatas=[
-                    {
-                        "model": sample.model,
-                        "prompt_id": sample.prompt_id,
-                        "centroid": False,
-                    }
-                    for sample in samples
-                ],
-                documents=[sample.completion for sample in samples],
-            )
+
+            samples_batches = [
+                samples[i : i + EMB_BATCH_SIZE]
+                for i in range(0, len(samples), EMB_BATCH_SIZE)
+            ]
+
+            for samples_batch in samples_batches:
+                response = await self.emb_client.embeddings.create(
+                    input=[sample.completion for sample in samples_batch],
+                    model=self.embedding_model,
+                )
+                await self.collection.add(
+                    ids=[sample.id for sample in samples_batch],
+                    embeddings=[emb.embedding for emb in response.data],
+                    metadatas=[
+                        {
+                            "model": sample.model,
+                            "prompt_id": sample.prompt_id,
+                            "centroid": False,
+                        }
+                        for sample in samples_batch
+                    ],
+                    documents=[sample.completion for sample in samples_batch],
+                )
             print("done")
         else:
             print(f'No new samples to upload to "{self.collection_name}"')
@@ -136,6 +149,7 @@ if __name__ == "__main__":
     root = Path(__file__).parent.parent.parent
     samples_path = root / "data/samples/20250316T174152.jsonl"
     uploader = SamplesUploader(
+        embedding_model="jinaai/jina-embeddings-v2-base-en",
         samples_path=samples_path,
         collection_name="test1",
     )
