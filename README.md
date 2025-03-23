@@ -41,14 +41,7 @@ LLM Fingerprint uses semantic similarity patterns across multiple prompts to cre
 
 ## Usage
 
-```bash
-# Set required environment variables. See .envrc.example
-export LLM_API_KEY="your_api_key"
-export LLM_BASE_URL="https://api.provider.com/v1"
-export CHROMADB_MODEL="jinaai/jina-embeddings-v3"
-export CHROMADB_URL="http://localhost:1235"
-export CHROMADB_DEVICE="cpu"
-```
+Set required environment variables. See [`.envrc.example`](.envrc.example) for more details.
 
 ### Creating Model Fingerprints
 
@@ -62,6 +55,7 @@ llm-fingerprint generate \
 
 # Upload samples to ChromaDB
 llm-fingerprint upload \
+  --language-model "embedding-model" \
   --samples-path "samples.jsonl" \
   --collection-name "samples"
 ```
@@ -79,6 +73,7 @@ llm-fingerprint generate \
 
 # Query ChromaDB for model identification
 llm-fingerprint query \
+  --language-model "embedding-model" \
   --samples-path "unk-samples.jsonl" \
   --results-path "results.jsonl" \
   --results-num 2
@@ -107,11 +102,11 @@ uv sync # --all-groups # for installing ml and dev groups
 ## Requirements
 
 - Python 3.12+
-- OpenAI-compatible API endpoints (`/chat/completions`)
-- Access to ChromaDB capable of running Sentence Transformer models (locally or hosted)
+- OpenAI-compatible API endpoints (`/chat/completions` and `/embeddings`)
+- Access to ChromaDB (locally or hosted)
 
 ## Contributing
 
-This research project is still in its early stages, and I welcome any feedback, suggestions, and contributions! If you're interested in discussing ideas or have questions about the approach, please start a conversation in [GitHub Discussions](https://github.com/S1M0N38/llm-fingerprint/discussions).
+This toy/research project is still in its early stages, and I welcome any feedback, suggestions, and contributions! If you're interested in discussing ideas or have questions about the approach, please start a conversation in [GitHub Discussions](https://github.com/S1M0N38/llm-fingerprint/discussions).
 
 For detailed information on setting up your development environment, understanding the project structure, and the contribution workflow, please refer to [CONTRIBUTING.md](CONTRIBUTING.md).

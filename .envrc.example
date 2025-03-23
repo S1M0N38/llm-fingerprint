@@ -1,16 +1,21 @@
 source .venv/bin/activate
 
 ################################################################################
-# LLM variables
+# Language Model variables
 ################################################################################
 
 export LLM_API_KEY="your_api_key"
 export LLM_BASE_URL="http://localhost:1234/v1"
 
 ################################################################################
+# Embedding Model variables
+################################################################################
+
+export EMB_API_KEY="your_api_key"
+export EMB_BASE_URL="http://localhost:1235/v1"
+
+################################################################################
 # Vector database
 ################################################################################
 
-export CHROMADB_MODEL="jinaai/jina-embeddings-v3"
-export CHROMADB_URL="http://localhost:1235"
-export CHROMADB_DEVICE="cpu" #  "cuda", "cpu", "mps", "npu"
+export CHROMADB_URL="http://localhost:1236"
