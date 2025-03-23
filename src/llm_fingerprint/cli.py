@@ -8,46 +8,41 @@ from pathlib import Path
 
 from tqdm import tqdm
 
-from llm_fingerprint.generator import SamplesGenerator
-from llm_fingerprint.querier import SamplesQuerier
-from llm_fingerprint.uploader import SamplesUploader
+from llm_fingerprint.services import GeneratorService, QuerierService, UploaderService
+from llm_fingerprint.storage.implementation.chroma import ChromaStorage
 
 
-def cmd_generate(args: Namespace):
-    """Generate samples and save them to args.samples_path."""
+async def cmd_generate(args: Namespace):
     args.samples_path.parent.mkdir(parents=True, exist_ok=True)
     for model in tqdm(args.language_model, desc="Generate samples", unit="model"):
-        generator = SamplesGenerator(
-            language_model=model,
+        generator = GeneratorService(
             prompts_path=args.prompts_path,
             samples_path=args.samples_path,
             samples_num=args.samples_num,
+            language_model=model,
             max_tokens=args.max_tokens,
         )
-        asyncio.run(generator.main())
+        await generator.main()
 
 
-def cmd_upload(args: Namespace):
-    """Upload samples to ChromaDB."""
-    uploader = SamplesUploader(
-        embedding_model=args.embedding_model,
-        samples_path=args.samples_path,
-        collection_name=args.collection_name,
-    )
-    asyncio.run(uploader.main())
+async def cmd_upload(args: Namespace, storage_factory=ChromaStorage):
+    # Create a VectorStorage and initialize it
+    storage = storage_factory(args.embedding_model)
+    await storage.initialize(args.collection_name)
+
+    # Upload samples
+    uploader = UploaderService(args.samples_path, storage)
+    await uploader.main()
 
 
-def cmd_query(args: Namespace):
-    """Query ChromaDB for model identification."""
-    args.results_path.parent.mkdir(parents=True, exist_ok=True)
-    querier = SamplesQuerier(
-        embedding_model=args.embedding_model,
-        samples_path=args.samples_path,
-        retults_path=args.results_path,
-        results_num=args.results_num,
-        collection_name=args.collection_name,
-    )
-    asyncio.run(querier.main())
+async def cmd_query(args: Namespace, storage_factory=ChromaStorage):
+    # Create a VectorStorage and initialize it
+    storage = storage_factory(args.embedding_model)
+    await storage.initialize(args.collection_name)
+
+    # Upload samples
+    querier = QuerierService(args.samples_path, args.results_path, storage)
+    await querier.main()
 
 
 def main():
@@ -102,7 +97,7 @@ def main():
         name="upload",
         help="Upload samples to ChromaDB",
     )
-    generate_parser.add_argument(
+    upload_parser.add_argument(
         "--embedding-model",
         type=str,
         required=True,
@@ -126,7 +121,7 @@ def main():
         name="query",
         help="Query ChromaDB for model identification",
     )
-    generate_parser.add_argument(
+    query_parser.add_argument(
         "--embedding-model",
         type=str,
         required=True,
@@ -155,13 +150,13 @@ def main():
 
     match args.command:
         case "generate":
-            cmd_generate(args)
+            asyncio.run(cmd_generate(args))
 
         case "upload":
-            cmd_upload(args)
+            asyncio.run(cmd_upload(args))
 
         case "query":
-            cmd_query(args)
+            asyncio.run(cmd_query(args))
 
         case _:
             parser.print_help()
