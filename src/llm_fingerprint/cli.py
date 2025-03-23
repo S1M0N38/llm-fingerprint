@@ -3,46 +3,9 @@
 import argparse
 import asyncio
 import sys
-from argparse import Namespace
 from pathlib import Path
 
-from tqdm import tqdm
-
-from llm_fingerprint.services import GeneratorService, QuerierService, UploaderService
-from llm_fingerprint.storage.implementation.chroma import ChromaStorage
-
-
-async def cmd_generate(args: Namespace):
-    args.samples_path.parent.mkdir(parents=True, exist_ok=True)
-    for model in tqdm(args.language_model, desc="Generate samples", unit="model"):
-        generator = GeneratorService(
-            prompts_path=args.prompts_path,
-            samples_path=args.samples_path,
-            samples_num=args.samples_num,
-            language_model=model,
-            max_tokens=args.max_tokens,
-        )
-        await generator.main()
-
-
-async def cmd_upload(args: Namespace, storage_factory=ChromaStorage):
-    # Create a VectorStorage and initialize it
-    storage = storage_factory(args.embedding_model)
-    await storage.initialize(args.collection_name)
-
-    # Upload samples
-    uploader = UploaderService(args.samples_path, storage)
-    await uploader.main()
-
-
-async def cmd_query(args: Namespace, storage_factory=ChromaStorage):
-    # Create a VectorStorage and initialize it
-    storage = storage_factory(args.embedding_model)
-    await storage.initialize(args.collection_name)
-
-    # Upload samples
-    querier = QuerierService(args.samples_path, args.results_path, storage)
-    await querier.main()
+from llm_fingerprint.commands import GenerateCommand, QueryCommand, UploadCommand
 
 
 def main():
@@ -148,19 +111,21 @@ def main():
 
     args = parser.parse_args()
 
-    match args.command:
-        case "generate":
-            asyncio.run(cmd_generate(args))
+    # Command factory - maps command names to their implementations
+    commands = {
+        "generate": GenerateCommand,
+        "upload": UploadCommand,
+        "query": QueryCommand,
+    }
 
-        case "upload":
-            asyncio.run(cmd_upload(args))
-
-        case "query":
-            asyncio.run(cmd_query(args))
-
-        case _:
-            parser.print_help()
-            sys.exit(1)
+    # Get the appropriate command class and execute it
+    command_class = commands.get(args.command)
+    if command_class:
+        command = command_class(args)
+        asyncio.run(command.execute())
+    else:
+        parser.print_help()
+        sys.exit(1)
 
 
 if __name__ == "__main__":

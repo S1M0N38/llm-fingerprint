@@ -1,5 +1,4 @@
 import asyncio
-from pathlib import Path
 
 from tqdm import tqdm
 
@@ -12,8 +11,7 @@ from llm_fingerprint.storage.base import VectorStorage
 class GeneratorService(CompletionsMixin):
     def __init__(
         self,
-        prompts_path: Path,
-        samples_path: Path,
+        file_io: FileIO,
         samples_num: int,
         language_model: str,
         max_tokens: int = 2048,
@@ -21,7 +19,7 @@ class GeneratorService(CompletionsMixin):
     ):
         CompletionsMixin.__init__(self, language_model, max_tokens)
         self.samples_num = samples_num
-        self.file_io = FileIO(prompts_path=prompts_path, samples_path=samples_path)
+        self.file_io = file_io
         self.semaphore = asyncio.Semaphore(concurrent_requests)
 
     async def main(self):
@@ -52,9 +50,9 @@ class GeneratorService(CompletionsMixin):
 
 
 class UploaderService:
-    def __init__(self, samples_path: Path, storage: VectorStorage):
+    def __init__(self, file_io: FileIO, storage: VectorStorage):
         self.storage = storage
-        self.file_io = FileIO(samples_path=samples_path)
+        self.file_io = file_io
 
     async def main(self):
         samples = await self.file_io.load_samples()
