@@ -39,7 +39,8 @@ class VectorStorage(ABC):
     ) -> None:
         pass
 
-    def _aggeregate_results(self, results_list: list[list[Result]]) -> list[Result]:
+    @staticmethod
+    def aggeregate_results(results_list: list[list[Result]]) -> list[Result]:
         """Aggregate results from multiple queries by taking the average score."""
 
         results_dict: defaultdict[str, list[float]] = defaultdict(list)
@@ -58,7 +59,13 @@ class VectorStorage(ABC):
 
         return agg_results
 
-    async def query_samples(self, samples: list[Sample]) -> list[Result]:
-        results_list = [await self.query_sample(sample) for sample in samples]
-        results = self._aggeregate_results(results_list)
+    async def query_samples(
+        self,
+        samples: list[Sample],
+        results_num: int = 5,
+    ) -> list[Result]:
+        results_list = [
+            await self.query_sample(sample, results_num) for sample in samples
+        ]
+        results = self.aggeregate_results(results_list)
         return results
