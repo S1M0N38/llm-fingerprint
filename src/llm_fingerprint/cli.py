@@ -30,6 +30,7 @@ def cmd_generate(args: Namespace):
 def cmd_upload(args: Namespace):
     """Upload samples to ChromaDB."""
     uploader = SamplesUploader(
+        embedding_model=args.embedding_model,
         samples_path=args.samples_path,
         collection_name=args.collection_name,
     )
@@ -40,6 +41,7 @@ def cmd_query(args: Namespace):
     """Query ChromaDB for model identification."""
     args.results_path.parent.mkdir(parents=True, exist_ok=True)
     querier = SamplesQuerier(
+        embedding_model=args.embedding_model,
         samples_path=args.samples_path,
         retults_path=args.results_path,
         results_num=args.results_num,
@@ -100,6 +102,12 @@ def main():
         name="upload",
         help="Upload samples to ChromaDB",
     )
+    generate_parser.add_argument(
+        "--embedding-model",
+        type=str,
+        required=True,
+        help="Model to use to compute embeddings",
+    )
     upload_parser.add_argument(
         "--samples-path",
         type=Path,
@@ -117,6 +125,12 @@ def main():
     query_parser = subparsers.add_parser(
         name="query",
         help="Query ChromaDB for model identification",
+    )
+    generate_parser.add_argument(
+        "--embedding-model",
+        type=str,
+        required=True,
+        help="Model to use to compute embeddings",
     )
     query_parser.add_argument(
         "--samples-path",
