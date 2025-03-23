@@ -15,11 +15,7 @@ class CompletionsMixin:
         max_tokens: int = 2048,
         base_url: str | None = None,
         api_key: str | None = None,
-        *args,
-        **kwargs,
     ):
-        super().__init__(*args, **kwargs)
-
         api_key = api_key if api_key else os.getenv("LLM_API_KEY", "")
         base_url = base_url if base_url else os.getenv("LLM_BASE_URL")
         if base_url is None:
@@ -57,11 +53,7 @@ class EmbeddingsMixin:
         embedding_model: str,
         base_url: str | None = None,
         api_key: str | None = None,
-        *args,
-        **kwargs,
     ):
-        super().__init__(*args, **kwargs)
-
         api_key = api_key if api_key else os.getenv("EMB_API_KEY", "")
         base_url = base_url if base_url else os.getenv("EMB_BASE_URL")
         if base_url is None:
