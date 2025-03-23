@@ -1,59 +1,15 @@
 import asyncio
-import uuid
 from pathlib import Path
 
-import aiofiles
 from tqdm import tqdm
 
+from llm_fingerprint.io import FileIO
 from llm_fingerprint.mixin import CompletionsMixin
-from llm_fingerprint.models import Prompt, Result, Sample
+from llm_fingerprint.models import Prompt
 from llm_fingerprint.storage.base import VectorStorage
 
 
-class BaseService:
-    @staticmethod
-    async def load_prompts(prompts_path) -> list[Prompt]:
-        async with aiofiles.open(prompts_path, "r") as f:
-            prompts: list[Prompt] = []
-            async for line in f:
-                prompt = Prompt.model_validate_json(line)
-                assert str(uuid.uuid5(uuid.NAMESPACE_DNS, prompt.prompt)) == prompt.id
-                prompts.append(prompt)
-        return prompts
-
-    @staticmethod
-    async def save_prompts(prompts_path, prompts: list[str]) -> None:
-        async with aiofiles.open(prompts_path, "w") as f:
-            for prompt_str in prompts:
-                prompt_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, prompt_str))
-                prompt = Prompt(id=prompt_id, prompt=prompt_str)
-                await f.write(prompt.model_dump_json() + "\n")
-
-    @staticmethod
-    async def load_samples(samples_path) -> list[Sample]:
-        async with aiofiles.open(samples_path, "r") as f:
-            samples = [Sample.model_validate_json(line) async for line in f]
-        return samples
-
-    @staticmethod
-    async def save_sample(samples_path, sample: Sample) -> None:
-        async with aiofiles.open(samples_path, "a") as f:
-            await f.write(sample.model_dump_json() + "\n")
-
-    @staticmethod
-    async def save_samples(samples_path, samples: list[Sample]) -> None:
-        async with aiofiles.open(samples_path, "a") as f:
-            for sample in samples:
-                await f.write(sample.model_dump_json() + "\n")
-
-    @staticmethod
-    async def save_results(results_path, results: list[Result]) -> None:
-        async with aiofiles.open(results_path, "a") as f:
-            for result in results:
-                await f.write(result.model_dump_json() + "\n")
-
-
-class GeneratorService(BaseService, CompletionsMixin):
+class GeneratorService(CompletionsMixin):
     def __init__(
         self,
         prompts_path: Path,
@@ -64,18 +20,17 @@ class GeneratorService(BaseService, CompletionsMixin):
         concurrent_requests: int = 32,
     ):
         CompletionsMixin.__init__(self, language_model, max_tokens)
-        self.prompts_path = prompts_path
-        self.samples_path = samples_path
         self.samples_num = samples_num
+        self.file_io = FileIO(prompts_path=prompts_path, samples_path=samples_path)
         self.semaphore = asyncio.Semaphore(concurrent_requests)
 
     async def main(self):
-        prompts = await self.load_prompts(self.prompts_path)
+        prompts = await self.file_io.load_prompts()
 
         async def generate_and_save_sample(prompt: Prompt) -> None:
             async with self.semaphore:
                 sample = await self.generate_sample(prompt)
-                await self.save_sample(self.samples_path, sample)
+                await self.file_io.save_sample(sample)
 
         tasks = [
             generate_and_save_sample(prompt)
@@ -96,24 +51,23 @@ class GeneratorService(BaseService, CompletionsMixin):
             await self.language_client.close()
 
 
-class UploaderService(BaseService):
+class UploaderService:
     def __init__(self, samples_path: Path, storage: VectorStorage):
-        self.samples_path = samples_path
         self.storage = storage
+        self.file_io = FileIO(samples_path=samples_path)
 
     async def main(self):
-        samples = await self.load_samples(self.samples_path)
+        samples = await self.file_io.load_samples()
         await self.storage.upload_samples(samples)
         await self.storage.upsert_centroids()
 
 
-class QuerierService(BaseService):
-    def __init__(self, prompts_path: Path, results_path: Path, storage: VectorStorage):
-        self.prompts_path = prompts_path
-        self.results_path = results_path
+class QuerierService:
+    def __init__(self, sample_path: Path, results_path: Path, storage: VectorStorage):
+        self.file_io = FileIO(samples_path=sample_path, results_path=results_path)
         self.storage = storage
 
     async def main(self):
-        samples = await self.load_samples(self.prompts_path)
+        samples = await self.file_io.load_samples()
         results = await self.storage.query_samples(samples)
-        await self.save_results(self.results_path, results)
+        await self.file_io.save_results(results)
