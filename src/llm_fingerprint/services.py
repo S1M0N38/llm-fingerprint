@@ -68,5 +68,5 @@ class QuerierService:
 
     async def main(self):
         samples = await self.file_io.load_samples()
-        results = await self.storage.query_samples(samples, self.result_num)
+        results = await self.storage.query_samples(samples, self.results_num)
         await self.file_io.save_results(results)
