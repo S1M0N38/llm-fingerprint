@@ -8,9 +8,9 @@ from pathlib import Path
 
 from tqdm import tqdm
 
-from llm_fingerprint.generate import SamplesGenerator
-from llm_fingerprint.query import SamplesQuerier
-from llm_fingerprint.upload import SamplesUploader
+from llm_fingerprint.generator import SamplesGenerator
+from llm_fingerprint.querier import SamplesQuerier
+from llm_fingerprint.uploader import SamplesUploader
 
 
 def cmd_generate(args: Namespace):

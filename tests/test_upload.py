@@ -8,7 +8,7 @@ import pytest
 from chromadb import AsyncHttpClient
 
 from llm_fingerprint.models import Sample
-from llm_fingerprint.upload import SamplesUploader
+from llm_fingerprint.uploader import SamplesUploader
 
 # Check for required environment variables
 CHROMADB_URL = os.getenv("CHROMADB_URL", "")

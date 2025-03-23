@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 from openai import NotFoundError
 
-from llm_fingerprint.generate import SamplesGenerator
+from llm_fingerprint.generator import SamplesGenerator
 from llm_fingerprint.models import Prompt, Sample
 
 ################################################################################

@@ -137,7 +137,7 @@ class SamplesQuerier:
 
 
 if __name__ == "__main__":
-    from llm_fingerprint.generate import SamplesGenerator
+    from llm_fingerprint.generator import SamplesGenerator
 
     root = Path(__file__).parent.parent.parent
     prompts_path = root / "data/prompts/prompts_single_v1.jsonl"
