@@ -45,7 +45,7 @@ test-generate-models-swapping:
 chroma-run:
     #!/usr/bin/env bash
     mkdir -p ./data/chroma
-    nohup chroma run --path ./data/chroma --log-path ./data/chroma/chroma.log --port 1235 > /dev/null 2>&1 &
+    nohup chroma run --path ./data/chroma --log-path ./data/chroma/chroma.log --port 1236 > /dev/null 2>&1 &
     echo $! > ./data/chroma/.chroma.pid
     echo "ChromaDB started in background (PID: $(cat ./data/chroma/.chroma.pid))"
 
