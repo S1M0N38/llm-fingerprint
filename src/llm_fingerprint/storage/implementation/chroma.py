@@ -11,11 +11,11 @@ from llm_fingerprint.storage.base import VectorStorage
 
 
 class ChromaStorage(VectorStorage, EmbeddingsMixin):
-    def __init__(self, embedding_model: str):
-        self.chormadb_url = os.getenv("CHROMADB_URL")
+    def __init__(self, embedding_model: str, chroma_url: str | None = None):
+        self.chormadb_url = chroma_url if chroma_url else os.getenv("CHROMADB_URL")
         if self.chormadb_url is None:
             raise ValueError("CHROMADB_URL is not set")
-        EmbeddingsMixin.__init__(self, embedding_model)
+        super().__init__(embedding_model=embedding_model)
 
     async def initialize(self, collection_name: str) -> None:
         url = urlparse(self.chormadb_url)
