@@ -1,11 +1,13 @@
 """Pytest configuration for LLM Fingerprint tests."""
 
 import uuid
+from typing import AsyncGenerator
 
 import pytest
 
 from llm_fingerprint.io import FileIO
 from llm_fingerprint.models import Prompt, Sample
+from llm_fingerprint.storage.implementation.chroma import ChromaStorage
 
 
 @pytest.fixture
@@ -98,3 +100,27 @@ def samples_test(prompts_test: list[Prompt]) -> list[Sample]:
                 samples.append(sample)
 
     return samples
+
+
+@pytest.fixture
+async def chroma_storage() -> AsyncGenerator[ChromaStorage, None]:
+    """Create a ChromaStorage instance with a test collection.
+
+    This fixture sets up a ChromaDB collection for testing and cleans it up
+    after the test completes. Requires CHROMADB_URL, EMB_API_KEY and EMB_BASE_URL
+    environment variables to be properly set.
+    """
+    # Setup
+    embedding_model = "jinaai/jina-embeddings-v2-base-en"
+    storage = ChromaStorage(embedding_model=embedding_model)
+    collection_name = "collection-test"
+    await storage.initialize(collection_name)
+
+    yield storage
+
+    # Cleanup
+    if hasattr(storage, "client") and storage.client:
+        results = await storage.collection.get(include=[])
+        await storage.collection.delete(ids=results["ids"])
+        # NOTE: deleting the elements instead of the collection is better
+        # becaause there are some leftovers from dleted collections
