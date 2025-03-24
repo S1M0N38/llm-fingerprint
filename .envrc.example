@@ -15,7 +15,12 @@ export EMB_API_KEY="your_api_key"
 export EMB_BASE_URL="http://localhost:1235/v1"
 
 ################################################################################
-# Vector database
+# Vector database (choose one)
 ################################################################################
 
+# ChromaDB (easier to run locally)
 export CHROMADB_URL="http://localhost:1236"
+
+# Qdrant (offer a free tier remote service)
+export QDRANT_URL="http://localhost:1236"
+export QDRANT_API_KEY="put_your_api_key_here"
