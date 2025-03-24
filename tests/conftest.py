@@ -1,17 +1,19 @@
 """Pytest configuration for LLM Fingerprint tests."""
 
 import uuid
+from pathlib import Path
 from typing import AsyncGenerator
 
 import pytest
 
 from llm_fingerprint.io import FileIO
 from llm_fingerprint.models import Prompt, Sample
+from llm_fingerprint.services import UploaderService
 from llm_fingerprint.storage.implementation.chroma import ChromaStorage
 
 
 @pytest.fixture
-def file_io_test(tmp_path) -> FileIO:
+def file_io_test(tmp_path: Path) -> FileIO:
     """Create a FileIO instance with temporary paths."""
     prompts_path = tmp_path / "prompts.jsonl"
     samples_path = tmp_path / "samples.jsonl"
@@ -103,6 +105,19 @@ def samples_test(prompts_test: list[Prompt]) -> list[Sample]:
 
 
 @pytest.fixture
+def samples_test_unk(samples_test: list[Sample]) -> list[Sample]:
+    """The samples from unknown models are simply the sample from samples_test
+    with the completion capitalized. In this way we have slightly modified text
+    but with the same meaning.
+    """
+    samples = [
+        sample.model_copy(update={"completion": sample.completion.upper()})
+        for sample in samples_test
+    ]
+    return samples
+
+
+@pytest.fixture
 async def chroma_storage() -> AsyncGenerator[ChromaStorage, None]:
     """Create a ChromaStorage instance with a test collection.
 
@@ -124,3 +139,28 @@ async def chroma_storage() -> AsyncGenerator[ChromaStorage, None]:
         await storage.collection.delete(ids=results["ids"])
         # NOTE: deleting the elements instead of the collection is better
         # becaause there are some leftovers from dleted collections
+
+
+@pytest.fixture
+async def populated_chroma_storage(
+    chroma_storage: ChromaStorage,
+    samples_test: list[Sample],
+    tmp_path: Path,
+) -> AsyncGenerator[ChromaStorage, None]:
+    """Create a ChromaStorage instance with pre-populated test data.
+
+    This fixture sets up a ChromaDB collection for testing and cleans it up
+    after the test completes. Requires CHROMADB_URL, EMB_API_KEY and EMB_BASE_URL
+    environment variables to be properly set.
+    """
+    file_io_test = FileIO(
+        samples_path=tmp_path / "samples-collections.jsonl",
+    )
+    await file_io_test.save_samples(samples_test)
+
+    # Upload samples to the database
+    uploader = UploaderService(file_io=file_io_test, storage=chroma_storage)
+    await uploader.main()
+
+    # yield the populated storage
+    yield chroma_storage
