@@ -132,3 +132,20 @@ class FileIO:
         async with aiofiles.open(self.results_path, "w") as f:
             for result in results:
                 await f.write(result.model_dump_json() + "\n")
+
+    async def load_results(self) -> list[Result]:
+        """Load results from the results_path.
+
+        Returns:
+            List of Result objects
+
+        Raises:
+            ValueError: If results_path is not set
+            FileNotFoundError: If the results file doesn't exist
+        """
+        if not self.results_path:
+            raise ValueError("results_path not set")
+
+        async with aiofiles.open(self.results_path, "r") as f:
+            results = [Result.model_validate_json(line) async for line in f]
+        return results
