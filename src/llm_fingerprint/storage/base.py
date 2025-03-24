@@ -29,7 +29,6 @@ class VectorStorage(ABC):
     async def query_sample(
         self,
         sample: Sample,
-        results_num: int = 5,
     ) -> list[Result]:
         pass
 
@@ -64,8 +63,7 @@ class VectorStorage(ABC):
         samples: list[Sample],
         results_num: int = 5,
     ) -> list[Result]:
-        results_list = [
-            await self.query_sample(sample, results_num) for sample in samples
-        ]
+        results_list = [await self.query_sample(sample) for sample in samples]
         results = self.aggregate_results(results_list)
+        results = sorted(results, key=lambda x: x.score)[:results_num]
         return results

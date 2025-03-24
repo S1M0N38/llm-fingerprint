@@ -60,12 +60,10 @@ class ChromaStorage(VectorStorage, EmbeddingsMixin):
     async def query_sample(
         self,
         sample: Sample,
-        results_num: int,
     ) -> list[Result]:
         embeddings = await self.embed_samples([sample])
         centroids = await self.collection.query(
             query_embeddings=[emb for emb in embeddings],
-            n_results=results_num,
             include=[IncludeEnum.metadatas, IncludeEnum.distances],
             where={"$and": [{"centroid": True}, {"prompt_id": sample.prompt_id}]},
         )
@@ -73,11 +71,8 @@ class ChromaStorage(VectorStorage, EmbeddingsMixin):
         assert centroids["metadatas"] is not None
         assert centroids["distances"] is not None
 
-        models = [metadata["model"] for metadata in centroids["metadatas"][0]]
+        models = [str(metadata["model"]) for metadata in centroids["metadatas"][0]]
         distances = centroids["distances"][0]
-
-        assert isinstance(models, list) and all(isinstance(m, str) for m in models)
-        assert isinstance(models, list)
 
         results = [
             Result(model=str(model), score=float(score))
