@@ -108,5 +108,5 @@ class ChromaStorage(VectorStorage, EmbeddingsMixin):
             (str(metadata["model"]), str(metadata["prompt_id"]))
             for metadata in samples["metadatas"]
         }
-        for model, prompt in centroids:
-            await self.upsert_centroid(model, prompt)
+        for model, prompt_id in centroids:
+            await self.upsert_centroid(model, prompt_id)
