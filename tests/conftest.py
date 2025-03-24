@@ -33,12 +33,18 @@ def prompts_test() -> list[Prompt]:
 
 @pytest.fixture
 def samples_test(prompts_test) -> list[Sample]:
+    """Create test samples with valid IDs for uploading."""
     completions = [
-        "paris",
-        "24",
-        "blue",
+        "Paris is the capital of France.",
+        "There are 24 hours in a day.",
+        "The sky is blue on a clear day.",
     ]
     return [
-        Sample(id="", model="test-model", prompt_id=prompt.id, completion=completion)
+        Sample(
+            id=f"test-{uuid.uuid4()}",
+            model="test-model",
+            prompt_id=prompt.id,
+            completion=completion,
+        )
         for prompt, completion in zip(prompts_test, completions)
     ]
