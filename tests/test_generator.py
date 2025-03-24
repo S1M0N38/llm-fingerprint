@@ -3,6 +3,7 @@ import pytest
 from llm_fingerprint.io import FileIO
 from llm_fingerprint.models import Prompt, Sample
 from llm_fingerprint.services import GeneratorService
+from tests.utils import filter_samples
 
 
 @pytest.mark.asyncio
@@ -11,7 +12,7 @@ from llm_fingerprint.services import GeneratorService
     [
         ("test-model-1", 1, 1),
         ("test-model-1", 2, 1),
-        ("test-model-1", 2, 3),
+        ("test-model-1", 3, 3),
         ("test-model-2", 1, 3),
     ],
 )
@@ -19,9 +20,9 @@ async def test_generator_service(
     file_io_test: FileIO,
     prompts_test: list[Prompt],
     samples_test: list[Sample],
-    language_model,
-    samples_num,
-    concurrent_requests,
+    language_model: str,
+    samples_num: int,
+    concurrent_requests: int,
 ):
     """Test that the GeneratorService can generate and save samples."""
 
@@ -39,7 +40,13 @@ async def test_generator_service(
         await generator.main()
 
         samples = await file_io_test.load_samples()
-        assert len(samples) == len(samples_test) * samples_num
+        samples_test = filter_samples(
+            samples=samples_test,
+            language_model=language_model,
+            samples_num=samples_num,
+        )
+
+        assert len(samples) == len(samples_test)
 
         prompt_to_sample = {sample.prompt_id: sample for sample in samples_test}
         for sample in samples:
