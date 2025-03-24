@@ -70,6 +70,8 @@ llm-fingerprint/
 │   └── llm_fingerprint/
 │       ├── __init__.py
 │       ├── cli.py               # Command-line interface
+│       ├── commands.py          # Command implementations (Command pattern)
+│       ├── io.py                # File I/O operations
 │       ├── mixin.py             # Completion and Embedding mixins
 │       ├── models.py            # Pydantic data models
 │       ├── services.py          # Service layer (Generator, Uploader, Querier)
@@ -90,12 +92,11 @@ llm-fingerprint/
 └── uv.lock                      # Dependencies lock file
 ```
 
-### Project Phases
+### Phases
 
 The diagram below illustrates the three main phases of the LLM fingerprinting process and how they connect. Understanding this workflow is essential for contributing to any part of the system.
 
 ```mermaid
-
 flowchart LR
  subgraph subGraph0["Phase 1: Generate"]
         direction TB
@@ -121,7 +122,6 @@ flowchart LR
         UnkPrompts --> UnkEmbed --> CompSim --> RankMatch
   end
     subGraph0 --> subGraph1 --> subGraph2
-
 ```
 
 ### Data Models
@@ -150,10 +150,77 @@ classDiagram
 
 ### Core Classes
 
-This diagram shows the main classes in the system and their relationships. The architecture follows a layered approach with storage abstractions, mixins for specific capabilities, and services that orchestrate the operations.
+#### 1. Command and Service Classes
+
+This diagram shows the command pattern implementation and the service classes that perform the actual operations.
 
 ```mermaid
 classDiagram
+    class Command {
+        <<Abstract>>
+        +args: Namespace
+        +__init__(args: Namespace)
+        +execute() async* None
+    }
+
+    class GenerateCommand {
+        +execute() async None
+    }
+
+    class UploadCommand {
+        +execute() async None
+    }
+
+    class QueryCommand {
+        +execute() async None
+    }
+
+    class GeneratorService {
+        +file_io: FileIO
+        +samples_num: int
+        +semaphore: Semaphore
+        +__init__(file_io: FileIO, samples_num: int, language_model: str, max_tokens: int, concurrent_requests: int)
+        +main() async None
+    }
+
+    class UploaderService {
+        +file_io: FileIO
+        +storage: VectorStorage
+        +__init__(file_io: FileIO, storage: VectorStorage)
+        +main() async None
+    }
+
+    class QuerierService {
+        +file_io: FileIO
+        +storage: VectorStorage
+        +results_num: int
+        +__init__(file_io: FileIO, storage: VectorStorage, results_num: int)
+        +main() async None
+    }
+
+    Command <|-- GenerateCommand : extends
+    Command <|-- UploadCommand : extends
+    Command <|-- QueryCommand : extends
+    GenerateCommand --> GeneratorService : creates
+    UploadCommand --> UploaderService : creates
+    QueryCommand --> QuerierService : creates
+```
+
+### 2. QuerierService and UploaderService
+
+This diagram shows the QuerierService and UploaderService classes and their relationships with storage-related classes.
+
+```mermaid
+classDiagram
+    class FileIO {
+        +prompts_path: Path
+        +samples_path: Path
+        +results_path: Path
+        +__init__(prompts_path?: Path, samples_path?: Path, results_path?: Path)
+        +load_samples() async list[Sample]
+        +save_results(results: list[Result]) async None
+    }
+
     class VectorStorage {
         <<Abstract>>
         +initialize(collection_name: str) async* None
@@ -161,7 +228,7 @@ classDiagram
         +query_sample(sample: Sample, results_num: int) async* list[Result]
         +upsert_centroids() async* None
         +query_samples(samples: list[Sample]) async list[Result]
-        -&lowbar;aggregate&lowbar;results(results_list: list[list[Result]]) list[Result]
+        -_aggregate_results(results_list: list[list[Result]]) list[Result]
     }
 
     class ChromaStorage {
@@ -175,67 +242,69 @@ classDiagram
         +upsert_centroid(model: str, prompt_id: str) async None
     }
 
-    class CompletionsMixin {
-        +language_model: str
-        +max_tokens: int
-        +language_client: AsyncOpenAI
-        +&lowbar;&lowbar;init&lowbar;&lowbar;(language_model: str, max_tokens: int)
-        +generate_sample(prompt: Prompt) async Sample
-    }
-
     class EmbeddingsMixin {
         +embedding_model: str
         +embedding_client: AsyncOpenAI
-        +&lowbar;&lowbar;init&lowbar;&lowbar;(embedding_model: str)
+        +__init__(embedding_model: str)
         +embed_samples(samples: list[Sample]) async list[list[float]]
     }
 
-    class BaseService {
-        <<Static Methods>>
-        +load_prompts(prompts_path: Path) async list[Prompt]
-        +save_prompts(prompts_path: Path, prompts: list[str]) async None
-        +load_samples(samples_path: Path) async list[Sample]
-        +save_sample(samples_path: Path, sample: Sample) async None
-        +save_samples(samples_path: Path, samples: list[Sample]) async None
-        +save_results(results_path: Path, results: list[Result]) async None
-    }
-
-    class GeneratorService {
-        +prompts_path: Path
-        +samples_path: Path
-        +samples_num: int
-        +semaphore: Semaphore
-        +&lowbar;&lowbar;init&lowbar;&lowbar;(prompts_path: Path, samples_path: Path, samples_num: int, language_model: str, max_tokens: int, concurrent_requests: int)
-        +main() async None
-    }
 
     class UploaderService {
-        +samples_path: Path
+        +file_io: FileIO
         +storage: VectorStorage
-        +&lowbar;&lowbar;init&lowbar;&lowbar;(samples_path: Path, storage: VectorStorage)
+        +__init__(file_io: FileIO, storage: VectorStorage)
         +main() async None
     }
 
     class QuerierService {
-        +prompts_path: Path
-        +results_path: Path
+        +file_io: FileIO
         +storage: VectorStorage
-        +&lowbar;&lowbar;init&lowbar;&lowbar;(prompts_path: Path, results_path: Path, storage: VectorStorage)
+        +results_num: int
+        +__init__(file_io: FileIO, storage: VectorStorage, results_num: int)
         +main() async None
     }
 
+    FileIO --o UploaderService : uses
+    FileIO --o QuerierService : uses
     VectorStorage <|-- ChromaStorage : implements
     ChromaStorage *-- EmbeddingsMixin : uses
-    GeneratorService *-- CompletionsMixin : uses
-    BaseService <|-- GeneratorService : extends
-    BaseService <|-- UploaderService : extends
-    BaseService <|-- QuerierService : extends
-    UploaderService o-- VectorStorage : has-a
-    QuerierService o-- VectorStorage : has-a
+    UploaderService o-- VectorStorage : uses
+    QuerierService o-- VectorStorage : uses
+```
 
-    note for VectorStorage "Abstract base class for vector storage backends"
-    note for EmbeddingsMixin "Provides embedding computation capabilities"
-    note for CompletionsMixin "Provides completion generation capabilities"
+### 3. GeneratorService
+
+This diagram shows the GeneratorService class and its relationships with completion-related classes.
+
+```mermaid
+classDiagram
+    class CompletionsMixin {
+        +language_model: str
+        +max_tokens: int
+        +language_client: AsyncOpenAI
+        +__init__(language_model: str, max_tokens: int)
+        +generate_sample(prompt: Prompt) async Sample
+    }
+
+    class FileIO {
+        +prompts_path: Path
+        +samples_path: Path
+        +__init__(prompts_path?: Path, samples_path?: Path, results_path?: Path)
+        +load_prompts() async list[Prompt]
+        +save_sample(sample: Sample) async None
+    }
+
+    class GeneratorService {
+        +file_io: FileIO
+        +samples_num: int
+        +semaphore: Semaphore
+        +__init__(file_io: FileIO, samples_num: int, language_model: str, max_tokens: int, concurrent_requests: int)
+        +main() async None
+    }
+
+    FileIO --o GeneratorService : uses
+    GeneratorService *-- CompletionsMixin : uses
 ```
 
 ### Storage Schema
@@ -270,7 +339,7 @@ flowchart TB
 
 ### CLI Commands
 
-This diagram shows the command-line interface structure, including the three main commands (generate, upload, query) and their respective parameters. The CLI is the primary way users interact with the system.
+This diagram shows the command-line interface structure, including the three main commands (generate, upload, query) and their respective parameters.
 
 ```mermaid
 graph TD
@@ -293,24 +362,4 @@ graph TD
         --samples-path (required)
         --results-path (required)
         --results-num (default: 5)"]
-```
-
-### Command Flow (CLI)
-
-This diagram illustrates how the CLI commands flow through the system, from the initial command parsing to the service execution. It shows how the different components connect and interact.
-
-```mermaid
-flowchart TD
-    CLI["CLI (cli.py)"] -- generate --> GenerateCmd["cmd_generate()"]
-    CLI -- upload --> UploadCmd["cmd_upload()"]
-    CLI -- query --> QueryCmd["cmd_query()"]
-    GenerateCmd -- creates --> Generator["GeneratorService"]
-    UploadCmd -- creates --> Storage["ChromaStorage"] & Uploader["UploaderService"]
-    QueryCmd -- creates --> Storage2["ChromaStorage"] & Querier["QuerierService"]
-    Generator -- calls --> GeneratorMain["generator.main()"]
-    Uploader -- calls --> UploaderMain["uploader.main()"]
-    GeneratorMain -- uses --> CompletionMixin["CompletionsMixin"]
-    Storage -- uses --> EmbeddingMixin["EmbeddingsMixin"]
-    Storage2 -- uses --> EmbeddingMixin
-    Querier -- calls --> QuerierMain["querier.main()"]
 ```
