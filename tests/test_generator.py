@@ -6,6 +6,7 @@ from llm_fingerprint.services import GeneratorService
 from tests.utils import filter_samples
 
 
+@pytest.mark.llm
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "language_model,samples_num,concurrent_requests",

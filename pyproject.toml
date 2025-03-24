@@ -28,8 +28,8 @@ addopts = "-v"
 testpaths = ["tests"]
 markers = [
   "llm: mark test as requiring LLM API access",
+  "emb: mark test as requiring EMB API access",
   "db: mark test as requiring database access",
-  "cli: mark test as CLI test",
 ]
 [tool.ruff.lint]
 extend-select = ["I"]
