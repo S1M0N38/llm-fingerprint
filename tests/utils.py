@@ -9,6 +9,7 @@ def filter_samples(
     samples: list[Sample],
     language_model: str | None = None,
     prompt_id: str | None = None,
+    prompts_num: int | None = None,
     samples_num: int | None = None,
 ) -> list[Sample]:
     """Filter samples based on specified criteria.
@@ -32,6 +33,10 @@ def filter_samples(
 
     if prompt_id is not None:
         result = [s for s in result if s.prompt_id == prompt_id]
+
+    if prompts_num is not None:
+        prompt_ids = list({s.prompt_id for s in result})[:prompts_num]
+        result = [s for s in result if s.prompt_id in prompt_ids]
 
     if samples_num is not None:
         result_dict = defaultdict(list)
