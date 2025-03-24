@@ -1,5 +1,31 @@
 # Changelog
 
+## [0.2.0](https://github.com/S1M0N38/llm-fingerprint/compare/v0.1.1...v0.2.0) (2025-03-24)
+
+
+### Features
+
+* **io:** add method to load results to FileIO ([34c9ecb](https://github.com/S1M0N38/llm-fingerprint/commit/34c9ecba4456627127be4a037ea3f6787703eab5))
+* move from chromadb ef to openai embedding url ([0ad6a70](https://github.com/S1M0N38/llm-fingerprint/commit/0ad6a70dc385d2f1a4b2e466520f25547015e182))
+
+
+### Bug Fixes
+
+* add results_num to QuerierService ([4b82c5b](https://github.com/S1M0N38/llm-fingerprint/commit/4b82c5be19d639a2ea0870d711971179f5562809))
+* **chroma:** results_num args ([08701bd](https://github.com/S1M0N38/llm-fingerprint/commit/08701bd68a706aae0e6fd9a9c9d1a321dbd54207))
+* **cli:** update cli cmd to use embedding model ([78eedab](https://github.com/S1M0N38/llm-fingerprint/commit/78eedabe2cbbed504fcb68acc874b564993be864))
+* **mixin:** remove `super().__init__` in mixin classes ([bae3df5](https://github.com/S1M0N38/llm-fingerprint/commit/bae3df5f7af94ffd8af8e61730a61d1f667199a1))
+* **query:** move chroma init to initialize and add print statements ([2712255](https://github.com/S1M0N38/llm-fingerprint/commit/27122558665218ce8fb492e6bf1a9b0a6b56cfe7))
+* remove tight coupling of env var and class init ([a8608ab](https://github.com/S1M0N38/llm-fingerprint/commit/a8608abe87f5672ff7acafbf6e18718035b6efe1))
+* typo in function names and args ([861bf71](https://github.com/S1M0N38/llm-fingerprint/commit/861bf715074fe6096de4b7eb1da85cbc2be64f61))
+
+
+### Documentation
+
+* **CONTRIBUTING:** add diagrams ([8131e5f](https://github.com/S1M0N38/llm-fingerprint/commit/8131e5f29859d790a262df87c3a190738c309319))
+* **CONTRIBUTING:** update diagrams ([6f6c836](https://github.com/S1M0N38/llm-fingerprint/commit/6f6c836ff3c3294a4fc568c0e3166a19afc68016))
+* update env var to make use of embedding endpoint ([f795a72](https://github.com/S1M0N38/llm-fingerprint/commit/f795a721479f2c116b7ea5b3e881de66f46dd6c7))
+
 ## [0.1.1](https://github.com/S1M0N38/llm-fingerprint/compare/v0.1.0...v0.1.1) (2025-03-20)
 
 
