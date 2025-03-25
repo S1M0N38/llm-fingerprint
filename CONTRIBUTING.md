@@ -380,3 +380,28 @@ graph TD
         --results-path (required)
         --results-num (default: 5)"]
 ```
+
+## Release Cycle
+
+The project follows an automated release process using GitHub Actions:
+
+1. **Conventional Commits**: All commits should follow the [Conventional Commits](https://www.conventionalcommits.org/) specification.
+
+2. **Release Please PR**: The [Release Please](https://github.com/googleapis/release-please) GitHub Action automatically maintains a release PR that:
+
+   - Updates the version in `pyproject.toml`
+   - Updates the `CHANGELOG.md` based on conventional commits
+   - The PR is continuously updated as new commits are added to the main branch
+
+   **Important**: Never manually modify `uv.lock`, `CHANGELOG.md`, or version numbers in `pyproject.toml` or `__init__.py`. These are automatically maintained by the release pipeline.
+
+3. **Version Release**: When ready for a new release, the repository owner merges the Release Please PR, which:
+
+   - Triggers the creation of a new Git tag (e.g., `v0.4.0`)
+   - Creates a GitHub Release with release notes
+
+4. **[PyPI Publication](https://pypi.org/project/llm_fingerprint/)**: When a new version tag is pushed, the Release PyPI workflow:
+   - Builds the Python package
+   - Publishes it to PyPI using trusted publishing
+
+This automated process ensures consistent versioning, comprehensive changelogs, and reliable package distribution with minimal manual intervention.
