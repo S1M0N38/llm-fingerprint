@@ -26,7 +26,7 @@ class ChromaStorage(VectorStorage, EmbeddingsMixin):
         self.collection = await self.client.get_or_create_collection(
             name=collection_name,
             embedding_function=None,
-            metadata={"distance": "cosine"},
+            metadata={"hnsw:space": "cosine"},
         )
 
     async def upload_samples(
