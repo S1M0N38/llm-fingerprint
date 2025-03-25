@@ -8,8 +8,8 @@ import pytest
 
 from llm_fingerprint.io import FileIO
 from llm_fingerprint.models import Prompt, Sample
-from llm_fingerprint.services import UploaderService
 from llm_fingerprint.storage.implementation.chroma import ChromaStorage
+from llm_fingerprint.storage.implementation.qdrant import QdrantStorage
 
 
 @pytest.fixture
@@ -118,7 +118,19 @@ def samples_test_unk(samples_test: list[Sample]) -> list[Sample]:
 
 
 @pytest.fixture
-async def chroma_storage() -> AsyncGenerator[ChromaStorage, None]:
+async def embedding_model() -> str:
+    return "jinaai/jina-embeddings-v2-base-en"
+
+
+@pytest.fixture
+async def collection_name() -> str:
+    return "test-collection"
+
+
+@pytest.fixture
+async def chroma_storage(
+    embedding_model, collection_name
+) -> AsyncGenerator[ChromaStorage, None]:
     """Create a ChromaStorage instance with a test collection.
 
     This fixture sets up a ChromaDB collection for testing and cleans it up
@@ -126,41 +138,35 @@ async def chroma_storage() -> AsyncGenerator[ChromaStorage, None]:
     environment variables to be properly set.
     """
     # Setup
-    embedding_model = "jinaai/jina-embeddings-v2-base-en"
     storage = ChromaStorage(embedding_model=embedding_model)
-    collection_name = "collection-test"
     await storage.initialize(collection_name)
+    print("Created ChromaDB collection")
 
-    yield storage
-
-    # Cleanup
-    if hasattr(storage, "client") and storage.client:
-        results = await storage.collection.get(include=[])
-        await storage.collection.delete(ids=results["ids"])
-        # NOTE: deleting the elements instead of the collection is better
-        # becaause there are some leftovers from dleted collections
+    try:
+        yield storage
+    finally:
+        if hasattr(storage, "client") and storage.client:
+            # NOTE: deleting the elements instead of the collection is better
+            # becaause there are some leftovers from dleted collections
+            results = await storage.collection.get(include=[])
+            await storage.collection.delete(ids=results["ids"])
+            print("Deleted ChromaDB collection")
 
 
 @pytest.fixture
-async def populated_chroma_storage(
-    chroma_storage: ChromaStorage,
-    samples_test: list[Sample],
-    tmp_path: Path,
-) -> AsyncGenerator[ChromaStorage, None]:
-    """Create a ChromaStorage instance with pre-populated test data.
+async def qdrant_storage(
+    embedding_model, collection_name
+) -> AsyncGenerator[QdrantStorage, None]:
+    """Create a QdrantStorage instance with a test collection."""
+    # Setup
+    storage = QdrantStorage(embedding_model=embedding_model)
+    await storage.initialize(collection_name)
+    print("Created Qdrant collection")
 
-    This fixture sets up a ChromaDB collection for testing and cleans it up
-    after the test completes. Requires CHROMADB_URL, EMB_API_KEY and EMB_BASE_URL
-    environment variables to be properly set.
-    """
-    file_io_test = FileIO(
-        samples_path=tmp_path / "samples-collections.jsonl",
-    )
-    await file_io_test.save_samples(samples_test)
-
-    # Upload samples to the database
-    uploader = UploaderService(file_io=file_io_test, storage=chroma_storage)
-    await uploader.main()
-
-    # yield the populated storage
-    yield chroma_storage
+    try:
+        yield storage
+    finally:
+        if hasattr(storage, "client") and storage.client:
+            await storage.client.delete_collection(collection_name)
+            await storage.client.close()
+            print("Deleted Qdrant collection")
