@@ -52,7 +52,16 @@ async def test_generator_service(
         prompt_to_sample = {sample.prompt_id: sample for sample in samples_test}
         for sample in samples:
             assert isinstance(sample, Sample)
+            # check that right language model is used
             assert sample.model == language_model
+            # check that sample.id is valid UUID
+            assert (
+                isinstance(sample.id, str)
+                and len(sample.id) == 36
+                and all(c in "0123456789abcdef-" for c in sample.id)
+            )
+            # check that completion is reasonable
+            # (shares some words with expected completion)
             gen_text = sample.completion.lower()
             exp_text = prompt_to_sample[sample.prompt_id].completion.lower()
             assert set(gen_text.split()) & set(exp_text.split())

@@ -1,4 +1,5 @@
 import os
+import uuid
 from urllib.parse import urlparse
 
 import numpy as np
@@ -88,7 +89,7 @@ class ChromaStorage(VectorStorage, EmbeddingsMixin):
             include=[IncludeEnum.embeddings],
         )
         await self.collection.add(
-            ids=f"centroid_{model}_{prompt_id}",
+            ids=str(uuid.uuid4()),
             embeddings=np.array(samples["embeddings"]).mean(axis=0).tolist(),
             metadatas=[
                 {

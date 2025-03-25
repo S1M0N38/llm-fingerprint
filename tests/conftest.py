@@ -94,7 +94,7 @@ def samples_test(prompts_test: list[Prompt]) -> list[Sample]:
         for i, prompt in enumerate(prompts_test):
             for completion in completions[i][model]:
                 sample = Sample(
-                    id=f"test-{uuid.uuid4()}",
+                    id=str(uuid.uuid4()),
                     model=model,
                     prompt_id=prompt.id,
                     completion=completion,

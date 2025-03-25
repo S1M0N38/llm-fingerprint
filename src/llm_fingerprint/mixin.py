@@ -1,4 +1,5 @@
 import os
+import uuid
 
 import httpx
 from openai import AsyncOpenAI
@@ -38,7 +39,7 @@ class CompletionsMixin:
         completion = response.choices[0].message.content
         assert completion
         return Sample(
-            id=response.id,
+            id=str(uuid.uuid4()),
             model=self.language_model,
             prompt_id=prompt.id,
             completion=completion,
