@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.3.0](https://github.com/S1M0N38/llm-fingerprint/compare/v0.2.0...v0.3.0) (2025-03-25)
+
+
+### Features
+
+* **qdrant:** add qdrant implementation ([94e7f89](https://github.com/S1M0N38/llm-fingerprint/commit/94e7f8911b7b612940195cf35f2940744a0938d5))
+
+
+### Bug Fixes
+
+* **chorma:** convert cosine distance to cosine similarity ([48635f0](https://github.com/S1M0N38/llm-fingerprint/commit/48635f0031a4661b3000ec25f56bec177d94a235))
+* **chroma:** set cosine distance as distance function ([b167eae](https://github.com/S1M0N38/llm-fingerprint/commit/b167eae8b7cf6533af4ae4700b9c774bf7083531))
+* **chroma:** use cosine for distance function ([131ac73](https://github.com/S1M0N38/llm-fingerprint/commit/131ac73ffbe10b732c70a12335e46ddf795f5048))
+* use uuid.uuid4 for Sample id ([d9785b8](https://github.com/S1M0N38/llm-fingerprint/commit/d9785b8c47a7e79487abf15ee9dd7beb66edd724))
+
+
+### Documentation
+
+* **CONTRIBUTING:** update diagrams ([56fec4c](https://github.com/S1M0N38/llm-fingerprint/commit/56fec4c8b9c3edf6a4d35bce2560a2bb9328ba4f))
+* **envrc:** add qdrant env var to .envrc.example ([df6f641](https://github.com/S1M0N38/llm-fingerprint/commit/df6f641a6f0b8f7f544d362662cf4f172b9c3648))
+
 ## [0.2.0](https://github.com/S1M0N38/llm-fingerprint/compare/v0.1.1...v0.2.0) (2025-03-24)
 
 
