@@ -101,7 +101,7 @@ uv sync # --all-groups # for installing ml and dev groups
 
 ## Requirements
 
-- Python 3.12+
+- Python 3.11+
 - OpenAI-compatible API endpoints (`/chat/completions` and `/embeddings`)
 - Access to ChromaDB (locally or hosted)
 

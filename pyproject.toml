@@ -4,7 +4,7 @@ version = "0.3.0"
 description = "Add your description here"
 readme = "README.md"
 authors = [{ name = "S1M0N38", email = "bertolottosimone@gmail.com" }]
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 dependencies = [
   "aiofiles>=24.1.0",
   "chromadb>=0.6.3",
