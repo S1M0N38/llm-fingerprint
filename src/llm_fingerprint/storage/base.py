@@ -65,5 +65,5 @@ class VectorStorage(ABC):
     ) -> list[Result]:
         results_list = [await self.query_sample(sample) for sample in samples]
         results = self.aggregate_results(results_list)
-        results = sorted(results, key=lambda x: x.score)[:results_num]
-        return results
+        results.sort(key=lambda x: x.score, reverse=True)
+        return results[:results_num]

@@ -73,12 +73,23 @@ class ChromaStorage(VectorStorage, EmbeddingsMixin):
         assert centroids["metadatas"] is not None
         assert centroids["distances"] is not None
 
-        models = [str(metadata["model"]) for metadata in centroids["metadatas"][0]]
+        language_models = [
+            str(metadata["model"]) for metadata in centroids["metadatas"][0]
+        ]
         distances = centroids["distances"][0]
 
+        # NOTE:
+        # ChromaDB returns the value returns cosine distance rather then cosine
+        # similarity.
+        # * cosine simliarity = x dot y / ||x|| ||y| -> [-1, 1]
+        # * cosine distance = 1 — cosine similarity  -> [0, 2]
+        # We need to convert the cosine distance to cosine similarity because
+        # in the rest of the code higher score means more similar
+        # => 1 - float(score)
+
         results = [
-            Result(model=str(model), score=float(score))
-            for model, score in zip(models, distances)
+            Result(model=str(model), score=1 - float(score))
+            for model, score in zip(language_models, distances)
         ]
 
         return results
