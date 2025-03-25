@@ -47,4 +47,3 @@ dev = [
   "pytest-asyncio>=0.25.3",
   "ruff>=0.10.0",
 ]
-ml = ["einops>=0.8.1", "sentence-transformers>=3.4.1"]
