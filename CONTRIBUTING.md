@@ -81,7 +81,7 @@ llm-fingerprint/
 │           └── implementation/
 │               ├── __init__.py
 │               ├── chroma.py    # ChromaDB implementation
-│               └── qdrant.py    # Qdrant implementation (placeholder)
+│               └── qdrant.py    # Qdrant implementation
 │
 ├── .envrc.example               # Environment variables template
 ├── CHANGELOG.md                 # Project changelog
@@ -126,7 +126,7 @@ flowchart LR
 
 ### Data Models
 
-The system uses three main data models to represent the data flowing through the system. These Pydantic models define the structure of prompts, samples, and query results.
+The system uses three main data models to represent the data flowing through the system. These Pydantic models define the structure of prompts, samples, and query results. The `id` are UUIDs generated for each object using `uuid.uuid4()` and then converted to strings (this produces lowercase hyphenated UUIDs).
 
 ```mermaid
 classDiagram
@@ -206,74 +206,7 @@ classDiagram
     QueryCommand --> QuerierService : creates
 ```
 
-### 2. QuerierService and UploaderService
-
-This diagram shows the QuerierService and UploaderService classes and their relationships with storage-related classes.
-
-```mermaid
-classDiagram
-    class FileIO {
-        +prompts_path: Path
-        +samples_path: Path
-        +results_path: Path
-        +__init__(prompts_path?: Path, samples_path?: Path, results_path?: Path)
-        +load_samples() async list[Sample]
-        +save_results(results: list[Result]) async None
-    }
-
-    class VectorStorage {
-        <<Abstract>>
-        +initialize(collection_name: str) async* None
-        +upload_samples(samples: list[Sample]) async* None
-        +query_sample(sample: Sample, results_num: int) async* list[Result]
-        +upsert_centroids() async* None
-        +query_samples(samples: list[Sample]) async list[Result]
-        -_aggregate_results(results_list: list[list[Result]]) list[Result]
-    }
-
-    class ChromaStorage {
-        -chromadb_url: str
-        -client: AsyncHttpClient
-        -collection: Collection
-        +initialize(collection_name: str) async None
-        +upload_samples(samples: list[Sample], batch_size: int) async None
-        +query_sample(sample: Sample, results_num: int) async list[Result]
-        +upsert_centroids() async None
-        +upsert_centroid(model: str, prompt_id: str) async None
-    }
-
-    class EmbeddingsMixin {
-        +embedding_model: str
-        +embedding_client: AsyncOpenAI
-        +__init__(embedding_model: str)
-        +embed_samples(samples: list[Sample]) async list[list[float]]
-    }
-
-
-    class UploaderService {
-        +file_io: FileIO
-        +storage: VectorStorage
-        +__init__(file_io: FileIO, storage: VectorStorage)
-        +main() async None
-    }
-
-    class QuerierService {
-        +file_io: FileIO
-        +storage: VectorStorage
-        +results_num: int
-        +__init__(file_io: FileIO, storage: VectorStorage, results_num: int)
-        +main() async None
-    }
-
-    FileIO --o UploaderService : uses
-    FileIO --o QuerierService : uses
-    VectorStorage <|-- ChromaStorage : implements
-    ChromaStorage *-- EmbeddingsMixin : uses
-    UploaderService o-- VectorStorage : uses
-    QuerierService o-- VectorStorage : uses
-```
-
-### 3. GeneratorService
+#### 2. GeneratorService
 
 This diagram shows the GeneratorService class and its relationships with completion-related classes.
 
@@ -305,6 +238,90 @@ classDiagram
 
     FileIO --o GeneratorService : uses
     GeneratorService *-- CompletionsMixin : uses
+```
+
+#### 3. QuerierService and UploaderService
+
+This diagram shows the QuerierService and UploaderService classes and their relationships with storage-related classes.
+
+```mermaid
+classDiagram
+    class FileIO {
+        +prompts_path: Path
+        +samples_path: Path
+        +results_path: Path
+        +__init__(prompts_path?: Path, samples_path?: Path, results_path?: Path)
+        +load_samples() async list[Sample]
+        +save_results(results: list[Result]) async None
+        +load_results() async list[Result]
+    }
+
+    class VectorStorage {
+        <<Abstract>>
+        +initialize(collection_name: str) async* None
+        +upload_samples(samples: list[Sample]) async* None
+        +query_sample(sample: Sample) async* list[Result]
+        +upsert_centroids() async* None
+        +query_samples(samples: list[Sample], results_num: int) async list[Result]
+        #aggregate_results(results_list: list[list[Result]]) list[Result]
+    }
+
+    class ChromaStorage {
+        -chormadb_url: str
+        -client: AsyncHttpClient
+        -collection: Collection
+        +__init__(embedding_model: str, chroma_url: str|None)
+        +initialize(collection_name: str) async None
+        +upload_samples(samples: list[Sample], batch_size: int) async None
+        +query_sample(sample: Sample) async list[Result]
+        +upsert_centroid(model: str, prompt_id: str) async None
+        +upsert_centroids() async None
+    }
+
+    class QdrantStorage {
+        -qdrant_url: str
+        -qdrant_api_key: str
+        -client: AsyncQdrantClient
+        -collection_name: str
+        +__init__(embedding_model: str, qdrant_url: str|None, qdrant_api_key: str|None)
+        +initialize(collection_name: str) async None
+        +upload_samples(samples: list[Sample], batch_size: int) async None
+        +query_sample(sample: Sample) async list[Result]
+        +upsert_centroid(model: str, prompt_id: str) async None
+        +upsert_centroids() async None
+        -_get_all_samples(with_payload: bool, with_vectors: bool) async list[Record]
+    }
+
+    class EmbeddingsMixin {
+        +embedding_model: str
+        +embedding_client: AsyncOpenAI
+        +__init__(embedding_model: str, base_url: str|None, api_key: str|None)
+        +embed_samples(samples: list[Sample]) async list[list[float]]
+    }
+
+    class UploaderService {
+        +file_io: FileIO
+        +storage: VectorStorage
+        +__init__(file_io: FileIO, storage: VectorStorage)
+        +main() async None
+    }
+
+    class QuerierService {
+        +file_io: FileIO
+        +storage: VectorStorage
+        +results_num: int
+        +__init__(file_io: FileIO, storage: VectorStorage, results_num: int)
+        +main() async None
+    }
+
+    FileIO --o UploaderService : uses
+    FileIO --o QuerierService : uses
+    VectorStorage <|-- ChromaStorage : implements
+    VectorStorage <|-- QdrantStorage : implements
+    ChromaStorage *-- EmbeddingsMixin : uses
+    QdrantStorage *-- EmbeddingsMixin : uses
+    UploaderService o-- VectorStorage : uses
+    QuerierService o-- VectorStorage : uses
 ```
 
 ### Storage Schema
