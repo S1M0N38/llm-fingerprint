@@ -75,12 +75,16 @@ class QdrantStorage(VectorStorage, EmbeddingsMixin):
         self,
         samples: list[Sample],
         batch_size: int = 8,
+        embeddings: list[list[float]] | None = None,
     ):
         # TODO: maybe update only the new ids
         # prev_samples = await self._get_all_records(with_payload=False)
         for i in range(0, len(samples), batch_size):
             samples_batch = samples[i : i + batch_size]
-            embeddings = await self.embed_samples(samples_batch)
+            if embeddings is None:
+                embeddings_batch = await self.embed_samples(samples_batch)
+            else:
+                embeddings_batch = embeddings[i : i + batch_size]
             points = [
                 models.PointStruct(
                     id=sample.id,
@@ -91,7 +95,7 @@ class QdrantStorage(VectorStorage, EmbeddingsMixin):
                     },
                     vector=embedding,
                 )
-                for sample, embedding in zip(samples_batch, embeddings)
+                for sample, embedding in zip(samples_batch, embeddings_batch)
             ]
             await self.client.upsert(
                 collection_name=self.collection_name,
@@ -101,11 +105,13 @@ class QdrantStorage(VectorStorage, EmbeddingsMixin):
     async def query_sample(
         self,
         sample: Sample,
+        embedding: list[float] | None = None,
     ) -> list[Result]:
-        embeddings = await self.embed_samples([sample])
+        if embedding is None:
+            embedding = (await self.embed_samples([sample]))[0]
         centroids = await self.client.query_points(
             collection_name=self.collection_name,
-            query=embeddings[0],
+            query=embedding,
             query_filter=models.Filter(
                 must=[
                     models.FieldCondition(
