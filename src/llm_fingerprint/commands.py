@@ -6,6 +6,7 @@ from tqdm import tqdm
 from llm_fingerprint.io import FileIO
 from llm_fingerprint.services import GeneratorService, QuerierService, UploaderService
 from llm_fingerprint.storage.implementation.chroma import ChromaStorage
+from llm_fingerprint.storage.implementation.qdrant import QdrantStorage
 
 
 class Command(ABC):
@@ -53,8 +54,16 @@ class UploadCommand(Command):
 
     async def execute(self) -> None:
         """Execute the upload command."""
-        # Create storage instance
-        storage = ChromaStorage(self.args.embedding_model)
+        match self.args.storage:
+            case "chroma":
+                storage = ChromaStorage(self.args.embedding_model)
+            case "qdrant":
+                storage = QdrantStorage(self.args.embedding_model)
+            case _:
+                raise NotImplementedError(
+                    f"Storage '{self.args.storage}' not implemented"
+                )
+
         await storage.initialize(self.args.collection_name)
 
         # Create file IO and uploader service
@@ -70,8 +79,16 @@ class QueryCommand(Command):
 
     async def execute(self) -> None:
         """Execute the query command."""
-        # Create storage instance
-        storage = ChromaStorage(self.args.embedding_model)
+        match self.args.storage:
+            case "chroma":
+                storage = ChromaStorage(self.args.embedding_model)
+            case "qdrant":
+                storage = QdrantStorage(self.args.embedding_model)
+            case _:
+                raise NotImplementedError(
+                    f"Storage '{self.args.storage}' not implemented"
+                )
+
         await storage.initialize(self.args.collection_name)
 
         # Create file IO and querier service
