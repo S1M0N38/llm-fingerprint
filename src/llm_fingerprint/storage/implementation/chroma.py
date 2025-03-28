@@ -34,6 +34,7 @@ class ChromaStorage(VectorStorage, EmbeddingsMixin):
         self,
         samples: list[Sample],
         batch_size: int = 32,
+        embeddings: list[list[float]] | None = None,
     ) -> None:
         # Avoid to upload samples that are already in the database
         ids = {sample.id for sample in samples}
@@ -43,29 +44,34 @@ class ChromaStorage(VectorStorage, EmbeddingsMixin):
 
         # Upload samples with their embeddings
         for i in range(0, len(new_samples), batch_size):
-            samples = new_samples[i : i + batch_size]
-            embeddings = await self.embed_samples(samples)
+            samples_batch = new_samples[i : i + batch_size]
+            if embeddings is None:
+                embeddings_batch = await self.embed_samples(samples_batch)
+            else:
+                embeddings_batch = embeddings[i : i + batch_size]
             await self.collection.add(
-                ids=[sample.id for sample in samples],
-                embeddings=[emb for emb in embeddings],
-                documents=[sample.completion for sample in samples],
+                ids=[sample.id for sample in samples_batch],
+                embeddings=[emb for emb in embeddings_batch],
+                documents=[sample.completion for sample in samples_batch],
                 metadatas=[
                     {
                         "model": sample.model,
                         "prompt_id": sample.prompt_id,
                         "centroid": False,
                     }
-                    for sample in samples
+                    for sample in samples_batch
                 ],
             )
 
     async def query_sample(
         self,
         sample: Sample,
+        embedding: list[float] | None = None,
     ) -> list[Result]:
-        embeddings = await self.embed_samples([sample])
+        if embedding is None:
+            embedding = (await self.embed_samples([sample]))[0]
         centroids = await self.collection.query(
-            query_embeddings=[emb for emb in embeddings],
+            query_embeddings=embedding,
             include=[IncludeEnum.metadatas, IncludeEnum.distances],
             where={"$and": [{"centroid": True}, {"prompt_id": sample.prompt_id}]},
         )
