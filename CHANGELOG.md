@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/S1M0N38/llm-fingerprint/compare/v0.4.0...v0.4.1) (2025-03-28)
+
+
+### Bug Fixes
+
+* **storage:** selectively `__init__` EmbeddingMixin ([6fcd901](https://github.com/S1M0N38/llm-fingerprint/commit/6fcd9018caa6e773af5ba1b3ddbddae045ce5bbc))
+
 ## [0.4.0](https://github.com/S1M0N38/llm-fingerprint/compare/v0.3.0...v0.4.0) (2025-03-28)
 
 
