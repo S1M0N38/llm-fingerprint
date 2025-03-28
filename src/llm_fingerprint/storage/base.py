@@ -30,7 +30,7 @@ class VectorStorage(ABC):
     async def query_sample(
         self,
         sample: Sample,
-        embeddings: list[list[float]] | None = None,
+        embedding: list[float] | None = None,
     ) -> list[Result]:
         pass
 
