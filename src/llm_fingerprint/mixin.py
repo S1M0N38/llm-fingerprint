@@ -67,6 +67,11 @@ class EmbeddingsMixin:
         )
 
     async def embed_samples(self, samples: list[Sample]) -> list[list[float]]:
+        if not hasattr(self, "embedding_client"):
+            raise AttributeError(
+                "embedding_client is not initialized. "
+                "Make sure EmbeddingsMixin.__init__ was called."
+            )
         response = await self.embedding_client.embeddings.create(
             input=[sample.completion for sample in samples],
             model=self.embedding_model,

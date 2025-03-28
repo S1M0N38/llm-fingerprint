@@ -12,7 +12,7 @@ from llm_fingerprint.storage.base import VectorStorage
 class QdrantStorage(VectorStorage, EmbeddingsMixin):
     def __init__(
         self,
-        embedding_model: str,
+        embedding_model: str | None = None,
         qdrant_url: str | None = None,
         qdrant_api_key: str | None = None,
     ) -> None:
@@ -22,7 +22,10 @@ class QdrantStorage(VectorStorage, EmbeddingsMixin):
         )
         if self.qdrant_url is None:
             raise ValueError("QDRANT_URL is not set")
-        super().__init__(embedding_model=embedding_model)
+
+        VectorStorage.__init__(self)
+        if embedding_model is not None:
+            EmbeddingsMixin.__init__(self, embedding_model=embedding_model)
 
     async def initialize(self, collection_name: str) -> None:
         self.client = AsyncQdrantClient(
