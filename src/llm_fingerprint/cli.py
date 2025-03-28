@@ -108,6 +108,12 @@ def main():
         default=5,
         help="Number of results to return",
     )
+    query_parser.add_argument(
+        "--collection-name",
+        type=str,
+        default="samples",
+        help="Name of the collection to query",
+    )
 
     args = parser.parse_args()
 
