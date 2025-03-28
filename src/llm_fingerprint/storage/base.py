@@ -22,6 +22,7 @@ class VectorStorage(ABC):
     async def upload_samples(
         self,
         samples: list[Sample],
+        embeddings: list[list[float]] | None = None,
     ) -> None:
         pass
 
@@ -29,6 +30,7 @@ class VectorStorage(ABC):
     async def query_sample(
         self,
         sample: Sample,
+        embeddings: list[list[float]] | None = None,
     ) -> list[Result]:
         pass
 
@@ -62,8 +64,11 @@ class VectorStorage(ABC):
         self,
         samples: list[Sample],
         results_num: int = 5,
+        embeddings: list[list[float]] | None = None,
     ) -> list[Result]:
-        results_list = [await self.query_sample(sample) for sample in samples]
+        results_list = [
+            await self.query_sample(sample, embeddings) for sample in samples
+        ]
         results = self.aggregate_results(results_list)
         results.sort(key=lambda x: x.score, reverse=True)
         return results[:results_num]
