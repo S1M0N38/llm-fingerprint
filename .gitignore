@@ -11,10 +11,8 @@ wheels/
 .envrc
 
 # Data
-/data/*
-!/data/prompts/
-!/data/prompts/*.yaml
-!/data/prompts/*.jsonl
+data/chroma/
+data/samples/
 
 # llama-swap binary
 llama-swap
