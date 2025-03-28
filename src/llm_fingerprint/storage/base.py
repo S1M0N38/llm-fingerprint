@@ -66,9 +66,13 @@ class VectorStorage(ABC):
         results_num: int = 5,
         embeddings: list[list[float]] | None = None,
     ) -> list[Result]:
-        results_list = [
-            await self.query_sample(sample, embeddings) for sample in samples
-        ]
+        if embeddings is None:
+            results_list = [await self.query_sample(sample) for sample in samples]
+        else:
+            results_list = [
+                await self.query_sample(sample, embedding)
+                for sample, embedding in zip(samples, embeddings)
+            ]
         results = self.aggregate_results(results_list)
         results.sort(key=lambda x: x.score, reverse=True)
         return results[:results_num]
