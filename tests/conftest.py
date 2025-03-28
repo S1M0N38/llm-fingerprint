@@ -7,6 +7,7 @@ from typing import AsyncGenerator
 import pytest
 
 from llm_fingerprint.io import FileIO
+from llm_fingerprint.mixin import EmbeddingsMixin
 from llm_fingerprint.models import Prompt, Sample
 from llm_fingerprint.storage.implementation.chroma import ChromaStorage
 from llm_fingerprint.storage.implementation.qdrant import QdrantStorage
@@ -120,6 +121,34 @@ def samples_test_unk(samples_test: list[Sample]) -> list[Sample]:
 @pytest.fixture
 async def embedding_model() -> str:
     return "jinaai/jina-embeddings-v2-base-en"
+
+
+@pytest.fixture
+async def embedding_provider(
+    embedding_model: str,
+) -> AsyncGenerator[EmbeddingsMixin, None]:
+    """Create an EmbeddingsMixin instance for computing embeddings."""
+    provider = EmbeddingsMixin(embedding_model=embedding_model)
+    try:
+        yield provider
+    finally:
+        await provider.embedding_client.close()
+
+
+@pytest.fixture
+async def embeddings_test(
+    embedding_provider: EmbeddingsMixin, samples_test: list[Sample]
+) -> list[list[float]]:
+    """Pre-computed embeddings for samples_test."""
+    return await embedding_provider.embed_samples(samples_test)
+
+
+@pytest.fixture
+async def embeddings_test_unk(
+    embedding_provider: EmbeddingsMixin, samples_test_unk: list[Sample]
+) -> list[list[float]]:
+    """Pre-computed embeddings for samples_test_unk."""
+    return await embedding_provider.embed_samples(samples_test_unk)
 
 
 @pytest.fixture
