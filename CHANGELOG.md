@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.4.0](https://github.com/S1M0N38/llm-fingerprint/compare/v0.3.0...v0.4.0) (2025-03-28)
+
+
+### Features
+
+* **storage:** add optional embeddings parameters to VectorStorage methods ([0277d92](https://github.com/S1M0N38/llm-fingerprint/commit/0277d9211095ed46f473f5456c69369d3a8dfa06))
+* **storage:** implement optional embeddings in ChromaStorage ([7f84082](https://github.com/S1M0N38/llm-fingerprint/commit/7f8408229ea3e27f492adf7d4a9e21e0b653a24d))
+* **storage:** implement optional embeddings in QdrantStorage ([125d3b5](https://github.com/S1M0N38/llm-fingerprint/commit/125d3b5d378da6c214498a991529912c74d8892b))
+
+
+### Bug Fixes
+
+* **storage:** accept single embedding in query_sample ([9b5afa2](https://github.com/S1M0N38/llm-fingerprint/commit/9b5afa29379c7b45c1470579b64d1ccb2b883617))
+* **storage:** handle optional embeddings in query_samples ([ee60ba8](https://github.com/S1M0N38/llm-fingerprint/commit/ee60ba8a5de3d2b326ee88007f9144f22a006803))
+
+
+### Documentation
+
+* **CONTRIBUTING:** add release cycle to CONTRIBUTING.md ([1bf6a6a](https://github.com/S1M0N38/llm-fingerprint/commit/1bf6a6a0306f48921a5598ef067016f05ed2afff))
+
 ## [0.3.0](https://github.com/S1M0N38/llm-fingerprint/compare/v0.2.0...v0.3.0) (2025-03-25)
 
 
