@@ -54,13 +54,6 @@ def main():
         default=2048,
         help="Maximum number of tokens to generate",
     )
-    generate_parser.add_argument(
-        "--storage",
-        type=str,
-        default="chroma",
-        choices=["chroma", "qdrant"],
-        help="Storage to upload samples to",
-    )
 
     # Upload command
     upload_parser = subparsers.add_parser(
@@ -84,6 +77,13 @@ def main():
         type=str,
         default="samples",
         help="Name of the collection to upload samples to",
+    )
+    upload_parser.add_argument(
+        "--storage",
+        type=str,
+        default="chroma",
+        choices=["chroma", "qdrant"],
+        help="Storage to upload samples to",
     )
 
     # Query command
