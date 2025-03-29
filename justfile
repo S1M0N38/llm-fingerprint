@@ -27,6 +27,13 @@ generate-samples-for-all-models:
       --samples-path "./data/samples/{{timestamp}}.jsonl" \
       --samples-num 4
 
+generate-samples-1b-models:
+    llm-fingerprint generate \
+      --language-model "llama-3.2-1b qwen-2.5-1.5b gemma-3-1b smollm-2-1.7b" \
+      --prompts-path "./data/prompts/prompts_general_v1.jsonl" \
+      --samples-path "./data/samples/{{timestamp}}.jsonl" \
+      --samples-num 16
+
 ################################################################################
 # Test
 ################################################################################
