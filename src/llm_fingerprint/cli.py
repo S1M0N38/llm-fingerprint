@@ -54,6 +54,12 @@ def main():
         default=2048,
         help="Maximum number of tokens to generate",
     )
+    generate_parser.add_argument(
+        "--concurrent-requests",
+        type=int,
+        default=32,
+        help="Number of concurrent requests to make",
+    )
 
     # Upload command
     upload_parser = subparsers.add_parser(
