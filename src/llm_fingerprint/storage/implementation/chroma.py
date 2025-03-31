@@ -81,11 +81,6 @@ class ChromaStorage(VectorStorage, EmbeddingsMixin):
         if embedding is None:
             embedding = (await self.embed_samples([sample]))[0]
 
-        # all_centroids = await self.collection.get(
-        #     where={"$and": [{"centroid": True}, {"prompt_id": sample.prompt_id}]},
-        #     include=[IncludeEnum.embeddings],
-        # )
-        #
         centroids = await self.collection.query(
             query_embeddings=embedding,
             include=[IncludeEnum.metadatas, IncludeEnum.distances],
