@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.5.1](https://github.com/S1M0N38/llm-fingerprint/compare/v0.5.0...v0.5.1) (2025-03-31)
+
+
+### Bug Fixes
+
+* **chroma:** increase hnsw:M for chroma storage ([0f6b11d](https://github.com/S1M0N38/llm-fingerprint/commit/0f6b11d48ff892884a39e3c16a5b518fa969e4c5))
+
+
+### Documentation
+
+* **pyproject:** add classifiers, urls and license ([ea889d0](https://github.com/S1M0N38/llm-fingerprint/commit/ea889d06246f847156246cdde11ae95d46e246af))
+* **pyproject:** add description to pyproject.toml ([ec30599](https://github.com/S1M0N38/llm-fingerprint/commit/ec305997b04562879bed310195a7d80f85b2ecf1))
+* **README:** add PyPI badge to readme ([2451789](https://github.com/S1M0N38/llm-fingerprint/commit/24517899dfa1216ba4ea43e8d5aa66ff03b7042f))
+
 ## [0.5.0](https://github.com/S1M0N38/llm-fingerprint/compare/v0.4.1...v0.5.0) (2025-03-31)
 
 
