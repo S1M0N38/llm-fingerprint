@@ -34,7 +34,10 @@ class ChromaStorage(VectorStorage, EmbeddingsMixin):
         self.collection = await self.client.get_or_create_collection(
             name=collection_name,
             embedding_function=None,
-            metadata={"hnsw:space": "cosine"},
+            metadata={
+                "hnsw:space": "cosine",
+                "hnsw:M": 64,
+            },
         )
 
     async def upload_samples(
@@ -77,6 +80,12 @@ class ChromaStorage(VectorStorage, EmbeddingsMixin):
     ) -> list[Result]:
         if embedding is None:
             embedding = (await self.embed_samples([sample]))[0]
+
+        # all_centroids = await self.collection.get(
+        #     where={"$and": [{"centroid": True}, {"prompt_id": sample.prompt_id}]},
+        #     include=[IncludeEnum.embeddings],
+        # )
+        #
         centroids = await self.collection.query(
             query_embeddings=embedding,
             include=[IncludeEnum.metadatas, IncludeEnum.distances],
