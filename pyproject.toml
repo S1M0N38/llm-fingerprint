@@ -3,6 +3,7 @@ name = "llm_fingerprint"
 version = "0.5.0"
 description = "Identify LLMs by their response fingerprints"
 readme = "README.md"
+license = "MIT"
 authors = [{ name = "S1M0N38", email = "bertolottosimone@gmail.com" }]
 requires-python = ">=3.11"
 dependencies = [
@@ -14,6 +15,16 @@ dependencies = [
   "qdrant-client>=1.13.3",
   "tqdm>=4.67.1",
 ]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Development Status :: 1 - Planning",
+]
+
+[project.urls]
+Repository = "https://github.com/S1M0N38/llm-fingerprint.git"
+Issues = "https://github.com/S1M0N38/llm-fingerprint/issues"
+Changelog = "https://github.com/S1M0N38/llm-fingerprint/blob/main/CHANGELOG.md"
 
 [project.scripts]
 llm-fingerprint = "llm_fingerprint.cli:main"
