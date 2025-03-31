@@ -16,8 +16,10 @@ class GeneratorService(CompletionsMixin):
         language_model: str,
         max_tokens: int = 2048,
         concurrent_requests: int = 32,
+        base_url: str | None = None,
+        api_key: str | None = None,
     ):
-        CompletionsMixin.__init__(self, language_model, max_tokens)
+        CompletionsMixin.__init__(self, language_model, max_tokens, base_url, api_key)
         self.samples_num = samples_num
         self.file_io = file_io
         self.semaphore = asyncio.Semaphore(concurrent_requests)
