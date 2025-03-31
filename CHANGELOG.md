@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.5.0](https://github.com/S1M0N38/llm-fingerprint/compare/v0.4.1...v0.5.0) (2025-03-31)
+
+
+### Features
+
+* **cli:** add --concurrent-requests flag for generate command ([f08d7cd](https://github.com/S1M0N38/llm-fingerprint/commit/f08d7cd46da7e2d613c4ce8278602d31bf4b90db))
+* **cli:** add --storage flag for select the storage backend ([8e6b1cc](https://github.com/S1M0N38/llm-fingerprint/commit/8e6b1cc11c5a2f3557a6a37a4efae3719be6ac8f))
+* **justfile:** add recipe for generation with 1b models ([9f8e216](https://github.com/S1M0N38/llm-fingerprint/commit/9f8e216dc45c482d210ecc49c074c46fbf06a90a))
+* **services:** add base_url and api_key to init of generate ([6544164](https://github.com/S1M0N38/llm-fingerprint/commit/6544164a612149f87c875420b10922ba624b24a3))
+
+
+### Bug Fixes
+
+* **cli:** add missing --colleciton-name in query command ([3d29ba3](https://github.com/S1M0N38/llm-fingerprint/commit/3d29ba30114da4fac1fd235e8375f8948d2a724c))
+* **cli:** move --storage from generate to upload ([493e9b6](https://github.com/S1M0N38/llm-fingerprint/commit/493e9b68467054e85e087269dd88e6fd991fd7ef))
+* **justfile:** increase sample size and reduce concurrent reqs ([36f469b](https://github.com/S1M0N38/llm-fingerprint/commit/36f469b9638157d6924b519d98bbf0c9c0206a67))
+
 ## [0.4.1](https://github.com/S1M0N38/llm-fingerprint/compare/v0.4.0...v0.4.1) (2025-03-28)
 
 
