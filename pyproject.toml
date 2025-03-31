@@ -1,6 +1,6 @@
 [project]
 name = "llm_fingerprint"
-version = "0.5.0"
+version = "0.5.1"
 description = "Identify LLMs by their response fingerprints"
 readme = "README.md"
 license = "MIT"
