@@ -7,6 +7,9 @@
     <a href="https://github.com/S1M0N38/llm-fingerprint/tags">
       <img alt="Tag" src="https://img.shields.io/github/v/tag/S1M0N38/llm-fingerprint?style=for-the-badge&color=blue"/>
     </a>
+    <a href="https://pypi.org/project/llm_fingerprint/">
+      <img alt="PyPI" src="https://img.shields.io/pypi/v/llm_fingerprint?style=for-the-badge"/>
+    </a>
   </p>
   <p>
     <em>Identify LLMs by their response fingerprints</em>
