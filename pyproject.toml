@@ -1,7 +1,7 @@
 [project]
 name = "llm_fingerprint"
 version = "0.5.0"
-description = "Add your description here"
+description = "Identify LLMs by their response fingerprints"
 readme = "README.md"
 authors = [{ name = "S1M0N38", email = "bertolottosimone@gmail.com" }]
 requires-python = ">=3.11"
