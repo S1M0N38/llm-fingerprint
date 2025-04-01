@@ -168,10 +168,12 @@ classDiagram
     }
 
     class UploadCommand {
+        +storage: str
         +execute() async None
     }
 
     class QueryCommand {
+        +storage: str
         +execute() async None
     }
 
@@ -179,7 +181,7 @@ classDiagram
         +file_io: FileIO
         +samples_num: int
         +semaphore: Semaphore
-        +__init__(file_io: FileIO, samples_num: int, language_model: str, max_tokens: int, concurrent_requests: int)
+        +__init__(file_io: FileIO, samples_num: int, language_model: str, max_tokens?: int, concurrent_requests?: int, base_url?: str|None, api_key?: str|None)
         +main() async None
     }
 
@@ -194,7 +196,7 @@ classDiagram
         +file_io: FileIO
         +storage: VectorStorage
         +results_num: int
-        +__init__(file_io: FileIO, storage: VectorStorage, results_num: int)
+        +__init__(file_io: FileIO, storage: VectorStorage, results_num?: int)
         +main() async None
     }
 
@@ -216,7 +218,7 @@ classDiagram
         +language_model: str
         +max_tokens: int
         +language_client: AsyncOpenAI
-        +__init__(language_model: str, max_tokens: int)
+        +__init__(language_model: str, max_tokens?: int, base_url?: str|None, api_key?: str|None)
         +generate_sample(prompt: Prompt) async Sample
     }
 
@@ -232,7 +234,7 @@ classDiagram
         +file_io: FileIO
         +samples_num: int
         +semaphore: Semaphore
-        +__init__(file_io: FileIO, samples_num: int, language_model: str, max_tokens: int, concurrent_requests: int)
+        +__init__(file_io: FileIO, samples_num: int, language_model: str, max_tokens?: int, concurrent_requests?: int, base_url?: str|None, api_key?: str|None)
         +main() async None
     }
 
@@ -259,10 +261,10 @@ classDiagram
     class VectorStorage {
         <<Abstract>>
         +initialize(collection_name: str) async* None
-        +upload_samples(samples: list[Sample]) async* None
-        +query_sample(sample: Sample) async* list[Result]
+        +upload_samples(samples: list[Sample], embeddings: list[list[float]]|None) async* None
+        +query_sample(sample: Sample, embedding: list[float]|None) async* list[Result]
         +upsert_centroids() async* None
-        +query_samples(samples: list[Sample], results_num: int) async list[Result]
+        +query_samples(samples: list[Sample], results_num: int, embeddings: list[list[float]]|None) async list[Result]
         #aggregate_results(results_list: list[list[Result]]) list[Result]
     }
 
@@ -270,10 +272,10 @@ classDiagram
         -chormadb_url: str
         -client: AsyncHttpClient
         -collection: Collection
-        +__init__(embedding_model: str, chroma_url: str|None)
+        +__init__(embedding_model: str|None, chroma_url: str|None)
         +initialize(collection_name: str) async None
-        +upload_samples(samples: list[Sample], batch_size: int) async None
-        +query_sample(sample: Sample) async list[Result]
+        +upload_samples(samples: list[Sample], embeddings: list[list[float]]|None) async None
+        +query_sample(sample: Sample, embedding: list[float]|None) async list[Result]
         +upsert_centroid(model: str, prompt_id: str) async None
         +upsert_centroids() async None
     }
@@ -283,10 +285,10 @@ classDiagram
         -qdrant_api_key: str
         -client: AsyncQdrantClient
         -collection_name: str
-        +__init__(embedding_model: str, qdrant_url: str|None, qdrant_api_key: str|None)
+        +__init__(embedding_model: str|None, qdrant_url: str|None, qdrant_api_key: str|None)
         +initialize(collection_name: str) async None
-        +upload_samples(samples: list[Sample], batch_size: int) async None
-        +query_sample(sample: Sample) async list[Result]
+        +upload_samples(samples: list[Sample], embeddings: list[list[float]]|None) async None
+        +query_sample(sample: Sample, embedding: list[float]|None) async list[Result]
         +upsert_centroid(model: str, prompt_id: str) async None
         +upsert_centroids() async None
         -_get_all_samples(with_payload: bool, with_vectors: bool) async list[Record]
@@ -318,8 +320,8 @@ classDiagram
     FileIO --o QuerierService : uses
     VectorStorage <|-- ChromaStorage : implements
     VectorStorage <|-- QdrantStorage : implements
-    ChromaStorage *-- EmbeddingsMixin : uses
-    QdrantStorage *-- EmbeddingsMixin : uses
+    ChromaStorage *-- EmbeddingsMixin : conditional
+    QdrantStorage *-- EmbeddingsMixin : conditional
     UploaderService o-- VectorStorage : uses
     QuerierService o-- VectorStorage : uses
 ```
@@ -367,18 +369,37 @@ graph TD
         --prompts-path (required)
         --samples-path (required)
         --samples-num (default: 5)
-        --max-tokens (default: 2048)"]
+        --max-tokens (default: 2048)
+        --concurrent-requests (default: 32)"]
 
     CLI -->|upload| Upload["
         --embedding-model (required)
         --samples-path (required)
-        --collection-name (default: samples)"]
+        --collection-name (default: samples)
+        --storage (default: chroma, choices: chroma, qdrant)"]
 
     CLI -->|query| Query["
         --embedding-model (required)
         --samples-path (required)
         --results-path (required)
-        --results-num (default: 5)"]
+        --results-num (default: 5)
+        --collection-name (default: samples)
+        --storage (default: chroma, choices: chroma, qdrant)"]
+```
+
+### Examples from Justfile
+
+The project includes a `justfile` with useful recipes for running common tasks. Here are some examples:
+
+```bash
+# Generate samples
+just model="llama-3.2-1b" generate-samples
+just generate-samples-for-all-models
+just generate-samples-1b-models
+
+# Run/Stop ChromaDB locally
+just chroma-run
+just chroma-stop
 ```
 
 ## Release Cycle
@@ -390,6 +411,7 @@ The project follows an automated release process using GitHub Actions:
 2. **Release Please PR**: The [Release Please](https://github.com/googleapis/release-please) GitHub Action automatically maintains a release PR that:
 
    - Updates the version in `pyproject.toml`
+   - Updates the version in `src/llm_fingerprint/__init__.py`
    - Updates the `CHANGELOG.md` based on conventional commits
    - The PR is continuously updated as new commits are added to the main branch
 
@@ -397,11 +419,18 @@ The project follows an automated release process using GitHub Actions:
 
 3. **Version Release**: When ready for a new release, the repository owner merges the Release Please PR, which:
 
-   - Triggers the creation of a new Git tag (e.g., `v0.4.0`)
+   - Triggers the creation of a new Git tag (e.g., `v0.5.1`)
    - Creates a GitHub Release with release notes
 
-4. **[PyPI Publication](https://pypi.org/project/llm_fingerprint/)**: When a new version tag is pushed, the Release PyPI workflow:
+4. **PyPI Publication**: When a new version tag is pushed, the Release PyPI workflow:
+
    - Builds the Python package
    - Publishes it to PyPI using trusted publishing
 
-This automated process ensures consistent versioning, comprehensive changelogs, and reliable package distribution with minimal manual intervention.
+5. **Lock File Update**: After a release is created, an additional workflow:
+   - Checks out the repository
+   - Updates the `uv.lock` file with `uv lock`
+   - Commits and pushes the updated lock file with the message "chore(deps): update uv.lock for version X.Y.Z"
+   - This ensures dependencies are properly locked for the new version
+
+This automated process ensures consistent versioning, comprehensive changelogs, reliable package distribution, and up-to-date dependency locks with minimal manual intervention.
