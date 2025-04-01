@@ -125,7 +125,11 @@ class QdrantStorage(VectorStorage, EmbeddingsMixin):
                     ),
                 ]
             ),
-            limit=10,
+            limit=256,
+            # NOTE: limit must be larger that the number of models
+            # supported. We want to return ALL the results otherwise the
+            # aggregation of results will be done between list of different
+            # sizes.
         )
 
         language_models: list[str] = []

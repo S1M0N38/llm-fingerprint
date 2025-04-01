@@ -85,6 +85,11 @@ class ChromaStorage(VectorStorage, EmbeddingsMixin):
             query_embeddings=embedding,
             include=[IncludeEnum.metadatas, IncludeEnum.distances],
             where={"$and": [{"centroid": True}, {"prompt_id": sample.prompt_id}]},
+            n_results=256,
+            # NOTE: n_results must be larger that the number of models
+            # supported. We want to return ALL the results otherwise the
+            # aggregation of results will be done between list of different
+            # sizes.
         )
 
         assert centroids["metadatas"] is not None
