@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.5.2](https://github.com/S1M0N38/llm-fingerprint/compare/v0.5.1...v0.5.2) (2025-04-01)
+
+
+### Bug Fixes
+
+* **storage:** return all centroid distances when query a sample ([35e4de2](https://github.com/S1M0N38/llm-fingerprint/commit/35e4de26b82f70f2d9be58356d190fe7585e1991))
+
+
+### Documentation
+
+* **CONTRIBUTING:** update diagrams and release cycle ([8a9a5f0](https://github.com/S1M0N38/llm-fingerprint/commit/8a9a5f0e0529567d351332843153769b4ae9b5c0))
+
 ## [0.5.1](https://github.com/S1M0N38/llm-fingerprint/compare/v0.5.0...v0.5.1) (2025-03-31)
 
 
