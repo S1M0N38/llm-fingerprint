@@ -41,6 +41,7 @@ class GenerateCommand(Command):
                 language_model=model,
                 max_tokens=self.args.max_tokens,
                 concurrent_requests=self.args.concurrent_requests,
+                rpm=self.args.rpm,
             )
 
             # Execute the generate operation

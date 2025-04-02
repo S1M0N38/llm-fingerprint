@@ -60,6 +60,12 @@ def main():
         default=32,
         help="Number of concurrent requests to make",
     )
+    generate_parser.add_argument(
+        "--rpm",
+        type=int,
+        default=0,
+        help="Rate limit: maximum requests per minute (0 for no limit)",
+    )
 
     # Upload command
     upload_parser = subparsers.add_parser(
