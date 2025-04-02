@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/S1M0N38/llm-fingerprint/compare/v0.5.2...v0.6.0) (2025-04-02)
+
+
+### Features
+
+* add RPMLimiter for generator service ([a636b23](https://github.com/S1M0N38/llm-fingerprint/commit/a636b23e98927684a96f8b034bf8a6d3868ec6f3))
+
 ## [0.5.2](https://github.com/S1M0N38/llm-fingerprint/compare/v0.5.1...v0.5.2) (2025-04-01)
 
 
