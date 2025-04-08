@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/S1M0N38/llm-fingerprint/compare/v0.6.0...v0.7.0) (2025-04-08)
+
+
+### Features
+
+* **justfile:** add recipes for prompts v2 ([95bce7b](https://github.com/S1M0N38/llm-fingerprint/commit/95bce7b6993b2ebb0be2a6f2fda9ff070858d5af))
+
 ## [0.6.0](https://github.com/S1M0N38/llm-fingerprint/compare/v0.5.2...v0.6.0) (2025-04-02)
 
 
