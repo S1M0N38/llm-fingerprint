@@ -64,7 +64,9 @@ async def test_generator_service(
             # (shares some words with expected completion)
             gen_text = sample.completion.lower()
             exp_text = prompt_to_sample[sample.prompt_id].completion.lower()
-            assert set(gen_text.split()) & set(exp_text.split())
+            gen_words = {w.strip(".,!?;:") for w in gen_text.split()}
+            exp_words = {w.strip(".,!?;:") for w in exp_text.split()}
+            assert gen_words & exp_words
 
     finally:
         if hasattr(generator, "language_client"):

@@ -8,11 +8,13 @@ authors = [{ name = "S1M0N38", email = "bertolottosimone@gmail.com" }]
 requires-python = ">=3.11"
 dependencies = [
   "aiofiles>=24.1.0",
-  "chromadb>=0.6.3",
+  "chromadb>=0.6.3,<1.0.0",
   "httpx>=0.28.1",
   "openai>=1.66.3",
+  "opentelemetry-instrumentation-fastapi>=0.53,<1.0",
   "pydantic>=2.10.6",
-  "qdrant-client>=1.13.3",
+  "qdrant-client>=1.13,<2.0",
+  "starlette>=0.46.1,<1.0.0",
   "tqdm>=4.67.1",
 ]
 classifiers = [
