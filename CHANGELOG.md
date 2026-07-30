@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.7.0](https://github.com/S1M0N38/llm-fingerprint/compare/v0.6.0...v0.7.0) (2026-07-30)
+
+
+### Features
+
+* **justfile:** add recipes for prompts v2 ([95bce7b](https://github.com/S1M0N38/llm-fingerprint/commit/95bce7b6993b2ebb0be2a6f2fda9ff070858d5af))
+
+
+### Bug Fixes
+
+* **deps:** pin starlette, opentelemetry, chromadb and qdrant versions ([dc209b4](https://github.com/S1M0N38/llm-fingerprint/commit/dc209b471a6321c9c469fd555235e6d6a24a49cf))
+* use getattr for reasoning_content to fix pyright type error ([ca6cf66](https://github.com/S1M0N38/llm-fingerprint/commit/ca6cf66179b1adf4aef4985997bba1f557d7b53f))
+
 ## [0.6.0](https://github.com/S1M0N38/llm-fingerprint/compare/v0.5.2...v0.6.0) (2025-04-02)
 
 
