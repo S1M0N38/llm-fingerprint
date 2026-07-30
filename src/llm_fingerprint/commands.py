@@ -18,7 +18,6 @@ class Command(ABC):
     @abstractmethod
     async def execute(self) -> None:
         """Execute the command with the provided arguments."""
-        pass
 
 
 class GenerateCommand(Command):

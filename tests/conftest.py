@@ -1,8 +1,8 @@
 """Pytest configuration for LLM Fingerprint tests."""
 
 import uuid
+from collections.abc import AsyncGenerator
 from pathlib import Path
-from typing import AsyncGenerator
 
 import pytest
 
