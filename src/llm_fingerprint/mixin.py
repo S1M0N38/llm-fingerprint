@@ -38,12 +38,8 @@ class CompletionsMixin:
         )
         msg = response.choices[0].message
         completion = msg.content
-        if (
-            not completion
-            and hasattr(msg, "reasoning_content")
-            and msg.reasoning_content
-        ):
-            completion = msg.reasoning_content
+        if not completion:
+            completion = getattr(msg, "reasoning_content", None)
         assert completion
         return Sample(
             id=str(uuid.uuid4()),
